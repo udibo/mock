@@ -22,10 +22,10 @@ function stub<T>(
       return arrOrFunc.apply(this, arguments);
     }
     : typeof arrOrFunc === "undefined"
-      ? () => undefined
-      : () => {
-        throw new SpyError("no return for call");
-      };
+    ? () => undefined
+    : () => {
+      throw new SpyError("no return for call");
+    };
   stub.func = function () {
     if (stub.returns.length === 0) return func.apply(this, arguments);
     return stub.returns.shift();
