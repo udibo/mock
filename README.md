@@ -14,7 +14,7 @@ A function or instance method wrapper that records all calls.
 
 When spying on a function, all arguments and return values are recorded but the behavior of that function is unchanged. This gives you the ability to verify that the code you are testing calls functions it depends on correctly and that they return the responses you expect them to.
 
-#### .calls: SpyCall\[\]
+#### .calls: [SpyCall](#spycall)\[\]
 
 Information about calls made to the function or instance method being spied on.
 
@@ -46,9 +46,9 @@ The value that was returned by a function.
 
 An error related to spying on a function or instance method.
 
-### spy\<T\>\(funcOrObj?: Function | T, method?: string\): Spy\<T\> | Spy\<void\>
+### spy\<T\>\(funcOrObj?: Function | T, method?: string\): [Spy\<T\>](#spyt) | [Spy\<void\>](#spyt)
 
-Wraps a function or instance method with a Spy.
+Wraps a function or instance method with a [Spy](#spyt).
 
 If you have a function that takes a callback but you don't need it to do anything, you can create an empty spy. An empty spy will just return undefined for any calls made to it.
 
@@ -184,7 +184,7 @@ Deno.test("functions call db.query", () => {
 });
 ```
 
-### Stub\<T\> extends Spy\<T\>
+### Stub\<T\> extends [Spy\<T\>](#spyt)
 
 An instance method wrapper that overrides the original method and records all calls made to it.
 
@@ -192,9 +192,9 @@ An instance method wrapper that overrides the original method and records all ca
 
 A queue of values that the stub will return.
 
-### stub\<T\>\(instance: T, method: string, arrOrFunc: any\[\] | Function\): Stub\<T\>
+### stub\<T\>\(instance: T, method: string, arrOrFunc: any\[\] | Function\): [Stub\<T\>](#stubt-extends-spyt)
 
-Wraps an instance method with a Stub.
+Wraps an instance method with a [Stub](#stubt-extends-spyt).
 
 If you have an instance method but you don't need it to do anything, you can create an empty stub. An empty stub will just return undefined for any calls made to it. If you need it to return specific values instead, you can add return values after initialization by replacing or adding to the `stub.returns` queue. When the returns queue is empty, it will return undefined.
 
