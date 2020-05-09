@@ -8,7 +8,11 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: [macOS-latest, windows-latest, ubuntu-latest]
+          - os: macOS-latest
+            kind: test
+          - os: windows-latest
+            kind: test
+          - os: ubuntu-latest
             kind: test
           - os: ubuntu-latest
             kind: lint
@@ -17,8 +21,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install deno
         uses: denolib/setup-deno@master
-          with:
-            deno-version: 1.0.0-rc1
+        with:
+          deno-version: 1.0.0-rc1
       - name: Check formatting
         if: matrix.config.kind == 'lint'
         run: deno fmt --check
