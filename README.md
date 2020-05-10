@@ -1,7 +1,8 @@
 # Mock
 
+[![version](https://img.shields.io/badge/release-v0.3.0-success)](https://github.com/udibo/mock/tree/v0.3.0)
+[![deno version](https://img.shields.io/badge/deno-v1.0.0--rc2-success)](https://github.com/denoland/deno/tree/v1.0.0-rc2)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
-[![deno version](https://img.shields.io/badge/deno-1.0.0--rc2-success)](https://github.com/denoland/deno)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
 
 This module provides utilities to help mock behavior and spy on function calls for tests.
