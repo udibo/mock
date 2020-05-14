@@ -1,9 +1,9 @@
 # Mock
 
 [![version](https://img.shields.io/badge/release-v0.3.0-success)](https://github.com/udibo/mock/tree/v0.3.0)
-[![deno version](https://img.shields.io/badge/deno-v1.0.0--rc2-success)](https://github.com/denoland/deno/tree/v1.0.0-rc2)
-[![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
+[![deno version](https://img.shields.io/badge/deno-v1.0.0-success)](https://github.com/denoland/deno/tree/v1.0.0)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
+[![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
 
 This module provides utilities to help mock behavior and spy on function calls for tests.
 
@@ -13,7 +13,7 @@ This module provides utilities to help mock behavior and spy on function calls f
 
 `stub.ts` module provides utilities for spying on instance methods and faking how they respond to calls.
 
-### Spy\<T\>
+### Spy<T\>
 
 A function or instance method wrapper that records all calls.
 
@@ -51,7 +51,7 @@ The value that was returned by a function.
 
 An error related to spying on a function or instance method.
 
-### spy\<T\>\(funcOrObj?: Function | T, method?: string\): [Spy\<T\>](#spyt) | [Spy\<void\>](#spyt)
+### spy<T\>\(funcOrObj?: Function | T, method?: string\): [Spy<T\>](#spyt) | [Spy<void\>](#spyt)
 
 Wraps a function or instance method with a [Spy](#spyt).
 
@@ -189,7 +189,7 @@ Deno.test("functions call db.query", () => {
 });
 ```
 
-### Stub\<T\> extends [Spy\<T\>](#spyt)
+### Stub<T\> extends [Spy<T\>](#spyt)
 
 An instance method wrapper that overrides the original method and records all calls made to it.
 
@@ -197,7 +197,7 @@ An instance method wrapper that overrides the original method and records all ca
 
 A queue of values that the stub will return.
 
-### stub\<T\>\(instance: T, method: string, arrOrFunc: any\[\] | Function\): [Stub\<T\>](#stubt-extends-spyt)
+### stub<T\>\(instance: T, method: string, arrOrFunc: any\[\] | Function\): [Stub<T\>](#stubt-extends-spyt)
 
 Wraps an instance method with a [Stub](#stubt-extends-spyt).
 
@@ -373,7 +373,7 @@ Deno.test("getUsers", () => {
 
 ```
 
-### returnsThis\(\): \(...args: any\[\]\) => ThisType\<any\>
+### returnsThis\(\): \(...args: any\[\]\) => ThisType<any\>
 
 Creates a function that returns the instance the method was called on.
 
@@ -389,11 +389,11 @@ Creates a function that returns its arguments or a subset of them. If end is spe
 
 Creates a function that throws a specific error.
 
-### resolves\(value: any\): \(...args: any\[\]\) => Promise\<any\>
+### resolves\(value: any\): \(...args: any\[\]\) => Promise<any\>
 
 Creates a function that returns a promise that will resolve a specific value.
 
-### rejects\(error: any\): \(...args: any\[\]\) => Promise\<any\>
+### rejects\(error: any\): \(...args: any\[\]\) => Promise<any\>
 
 Creates a function that returns a promise that will reject a specific error.
 

@@ -27,10 +27,9 @@ function isSpy<T>(func: Function): func is Spy<T> {
     Array.isArray((func as Spy<T>).calls);
 }
 
-class SpyBase {
+class SpyMixin {
   originalFunc: Function;
   func: Function;
-  /** Information about calls made to the function or instance method being spied on. */
   calls: SpyCall[];
   obj?: any;
   method?: string;
@@ -42,7 +41,6 @@ class SpyBase {
     this.calls = [];
   }
 
-  /** Removes spy wrapper from instance method. */
   restore(): void {
     if (this.obj && this.method) {
       if (!this.restored) {
@@ -54,8 +52,17 @@ class SpyBase {
 }
 
 /** A function or instance method wrapper that records all calls made to it. */
-export interface Spy<T> extends SpyBase {
+export interface Spy<T> {
   (this: T, ...args: any[]): any;
+  originalFunc: Function;
+  func: Function;
+  /** Information about calls made to the function or instance method being spied on. */
+  calls: SpyCall[];
+  obj?: any;
+  method?: string;
+  restored?: boolean;
+  /** Removes spy wrapper from instance method. */
+  restore(): void;
 }
 
 function spyFactory(func: Function): Spy<void>;
@@ -78,7 +85,7 @@ function spyFactory<T>(func: Function, obj?: T): Spy<T> | Spy<void> {
     calls.push(call);
     return returned;
   } as Spy<T> | Spy<void>;
-  applyInstanceMixins(spy, [SpyBase]);
+  applyInstanceMixins(spy, [SpyMixin]);
   if (obj) spy.obj = obj;
   spy.originalFunc = func;
   spy.func = func;
