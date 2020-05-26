@@ -6,6 +6,10 @@ export class Point {
   toString(): string {
     return [this.x, this.y].join(", ");
   }
+  *[Symbol.iterator](): IterableIterator<number> {
+    yield this.x;
+    yield this.y;
+  }
 }
 
 export function stringifyPoint(point: Point) {

@@ -1,9 +1,9 @@
 # Mock
 
-[![version](https://img.shields.io/badge/release-v0.3.0-success)](https://github.com/udibo/mock/tree/v0.3.0)
+[![version](https://img.shields.io/badge/release-v0.4.0-success)](https://github.com/udibo/mock/tree/v0.4.0)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
-[![deno version](https://img.shields.io/badge/deno-v1.0.0-success)](https://github.com/denoland/deno/tree/v1.0.0)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock/mod.ts)
+[![deno version](https://img.shields.io/badge/deno-v1.0.2-success)](https://github.com/denoland/deno/tree/v1.0.2)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/raw.githubusercontent.com/udibo/mock/v0.4.0/mod.ts)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
 
 This module provides utilities to help mock behavior and spy on function calls for tests.
@@ -59,8 +59,8 @@ Wraps a function or instance method with a [Spy](#spyt).
 If you have a function that takes a callback but you don't need it to do anything, you can create an empty spy. An empty spy will just return undefined for any calls made to it.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { spy, Spy } from "https://raw.githubusercontent.com/udibo/mock/v0.3.0/spy.ts";
+import { assertEquals } from "https://deno.land/std@0.53.0/testing/asserts.ts";
+import { spy, Spy } from "https://raw.githubusercontent.com/udibo/mock/v0.4.0/spy.ts";
 
 function add(
   a: number,
@@ -87,8 +87,8 @@ Deno.test("calls fake callback", () => {
 If you have a function that takes a callback that needs to still behave normally, you can wrap it with a spy.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { spy, Spy } from "https://raw.githubusercontent.com/udibo/mock/v0.3.0/spy.ts";
+import { assertEquals } from "https://deno.land/std@0.53.0/testing/asserts.ts";
+import { spy, Spy } from "https://raw.githubusercontent.com/udibo/mock/v0.4.0/spy.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
   return values.filter(callback);
@@ -115,8 +115,8 @@ Deno.test("calls real callback", () => {
 If you have an instance method that needs to still behave normally, you can wrap it with a spy. When you are done spying on a method, you need to call the restore function on the spy object to remove the wrapper from the instance method. If it is not restored and you attempt to wrap it again, it will throw a spy error saying "already spying on function".
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { spy, Spy } from "https://raw.githubusercontent.com/udibo/mock/v0.3.0/spy.ts";
+import { assertEquals } from "https://deno.land/std@0.53.0/testing/asserts.ts";
+import { spy, Spy } from "https://raw.githubusercontent.com/udibo/mock/v0.4.0/spy.ts";
 
 class Database {
   private queries: any;
@@ -205,8 +205,8 @@ Wraps an instance method with a [Stub](#stubt-extends-spyt).
 If you have an instance method but you don't need it to do anything, you can create an empty stub. An empty stub will just return undefined for any calls made to it. If you need it to return specific values instead, you can add return values after initialization by replacing or adding to the `stub.returns` queue. When the returns queue is empty, it will return undefined.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { stub, Stub } from "https://raw.githubusercontent.com/udibo/mock/v0.3.0/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.53.0/testing/asserts.ts";
+import { stub, Stub } from "https://raw.githubusercontent.com/udibo/mock/v0.4.0/stub.ts";
 
 class Cat {
   action(name: string): any {
@@ -237,8 +237,8 @@ Deno.test("doAction", () => {
 If you have an instance method but need it to return specific values for each call, you can create a stub with an array of values in the order that you want them returned. You can add more return values after initialization by replacing or adding to the `stub.returns` queue.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { stub, Stub } from "https://raw.githubusercontent.com/udibo/mock/v0.3.0/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.53.0/testing/asserts.ts";
+import { stub, Stub } from "https://raw.githubusercontent.com/udibo/mock/v0.4.0/stub.ts";
 
 class Database {
   query(query: string, params: any[]): any[][] {
@@ -306,8 +306,8 @@ Deno.test("getUsers", () => {
 If you have an instance method but need it to call a replacement function instead of the original, you can create a stub with a replacement function. If you need it to return specific values instead, you can add return values after initialization by replacing or adding to the `stub.returns` queue. When the returns queue is empty, it will call the replacement function.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { stub, Stub } from "https://raw.githubusercontent.com/udibo/mock/v0.3.0/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.53.0/testing/asserts.ts";
+import { stub, Stub } from "https://raw.githubusercontent.com/udibo/mock/v0.4.0/stub.ts";
 
 class Database {
   query(query: string, params: any[]): any[][] {
