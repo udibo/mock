@@ -168,7 +168,7 @@ interface DueNode {
 
 let time: FakeTime | undefined = undefined;
 /**
- * Overrides real Date object and timer functions with fake ones that can be
+ * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
  */
 export class FakeTime {
