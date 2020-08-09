@@ -2,7 +2,7 @@ import {
   assertEquals,
   assertNotEquals,
   assertThrows,
-  assertStrictEq,
+  assertStrictEquals,
 } from "./deps/std/testing/asserts.ts";
 import { spy, Spy, SpyCall, SpyError } from "./spy.ts";
 import { Point, stringifyPoint } from "./test_shared.ts";
@@ -233,7 +233,7 @@ Deno.test("spy instance property getter/setter", () => {
     assertEquals(getter.calls, expectedGetterCalls);
     assertEquals(setter.calls, expectedSetterCalls);
 
-    assertStrictEq(point.action, action);
+    assertStrictEquals(point.action, action);
     expectedGetterCalls.push({ self: point, args: [], returned: action });
     assertEquals(action.calls, expectedCalls);
     assertEquals(getter.calls, expectedGetterCalls);
@@ -247,13 +247,13 @@ Deno.test("spy instance property getter/setter", () => {
     assertEquals(setter.calls, expectedSetterCalls);
 
     const replacement: (...args: any[]) => any = (...args: any[]) => args[1];
-    assertStrictEq(point.action = replacement, replacement);
+    assertStrictEquals(point.action = replacement, replacement);
     expectedSetterCalls.push({ self: point, args: [replacement] });
     assertEquals(action.calls, expectedCalls);
     assertEquals(getter.calls, expectedGetterCalls);
     assertEquals(setter.calls, expectedSetterCalls);
 
-    assertStrictEq(point.action, replacement);
+    assertStrictEquals(point.action, replacement);
     expectedGetterCalls.push({ self: point, args: [], returned: replacement });
     assertEquals(action.calls, expectedCalls);
     assertEquals(getter.calls, expectedGetterCalls);
@@ -267,7 +267,7 @@ Deno.test("spy instance property getter/setter", () => {
   } finally {
     action.restore();
   }
-  assertStrictEq(point.action, Point.prototype.action);
+  assertStrictEquals(point.action, Point.prototype.action);
   assertEquals(getter.calls, expectedGetterCalls);
   assertThrows(
     () => action.restore(),

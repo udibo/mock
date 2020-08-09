@@ -2,7 +2,7 @@
 
 [![version](https://img.shields.io/badge/release-v0.4.0-success)](https://github.com/udibo/mock/tree/v0.4.0)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
-[![deno version](https://img.shields.io/badge/deno-v1.0.2-success)](https://github.com/denoland/deno/tree/v1.0.2)
+[![deno version](https://img.shields.io/badge/deno-v1.2.2-success)](https://github.com/denoland/deno/tree/v1.2.2)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/raw.githubusercontent.com/udibo/mock/v0.4.0/mod.ts)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
 
