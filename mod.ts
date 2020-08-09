@@ -1,3 +1,5 @@
+/** This module is browser compatible. */
+
 export {
   SpyError,
   SpyCall,
@@ -7,10 +9,22 @@ export {
 export {
   Stub,
   stub,
+} from "./stub.ts";
+export {
+  NativeDate,
+  NativeDateConstructor,
+  NativeTime,
+  FakeTime,
+  FakeDate,
+  FakeDateConstructor,
+  TimeError,
+} from "./time.ts";
+export {
+  fromNow,
   returnsThis,
   returnsArg,
   returnsArgs,
   throws,
   resolves,
   rejects,
-} from "./stub.ts";
+} from "./callbacks.ts";

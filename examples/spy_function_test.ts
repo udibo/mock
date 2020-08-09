@@ -1,7 +1,7 @@
 import { assertEquals } from "../deps/std/testing/asserts.ts";
 import { spy, Spy } from "../spy.ts";
 
-function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
+function filter<T>(values: T[], callback: (value: T) => boolean): T[] {
   return values.filter(callback);
 }
 

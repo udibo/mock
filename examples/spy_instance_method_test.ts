@@ -2,6 +2,7 @@ import { assertEquals } from "../deps/std/testing/asserts.ts";
 import { spy, Spy } from "../spy.ts";
 
 class Database {
+  // deno-lint-ignore no-explicit-any
   private queries: any;
   constructor() {
     this.queries = {
@@ -15,6 +16,7 @@ class Database {
       },
     };
   }
+  // deno-lint-ignore no-explicit-any
   query(query: string, params: any[]): any[][] {
     return this.queries[query][params[0]]; // implementation not important for example
   }
@@ -42,32 +44,34 @@ Deno.test("functions call db.query", () => {
   const db: Database = new Database();
   const query: Spy<Database> = spy(db, "query");
 
-  assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
-  assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
-  assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
-  assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
-  assertEquals(query.calls, [
-    {
-      args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
-      self: db,
-      returned: [[1, "Doe"], [3, "Smith"]],
-    },
-    {
-      args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
-      self: db,
-      returned: [[1, "Jane"], [2, "John"]],
-    },
-    {
-      args: ["select id, last_name from USERS where first_name=?", ["John"]],
-      self: db,
-      returned: [[2, "Doe"]],
-    },
-    {
-      args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
-      self: db,
-      returned: [[3, "Jane"]],
-    },
-  ]);
-
-  query.restore();
+  try {
+    assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
+    assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
+    assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
+    assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
+    assertEquals(query.calls, [
+      {
+        args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
+        self: db,
+        returned: [[1, "Doe"], [3, "Smith"]],
+      },
+      {
+        args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
+        self: db,
+        returned: [[1, "Jane"], [2, "John"]],
+      },
+      {
+        args: ["select id, last_name from USERS where first_name=?", ["John"]],
+        self: db,
+        returned: [[2, "Doe"]],
+      },
+      {
+        args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
+        self: db,
+        returned: [[3, "Jane"]],
+      },
+    ]);
+  } finally {
+    query.restore();
+  }
 });
