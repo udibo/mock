@@ -94,8 +94,11 @@ Deno.test("assertPassthrough function", () => {
 Deno.test("assertPassthrough instance", () => {
   const point: Point = new Point(2, 3);
   const point2: Point = new Point(3, 4);
-  const callAction: (...args: any[]) => any = (...args: any[]) => {
-    return 3 * point.action.call(point2, args[0] * 2, args[1] * 2);
+  const callAction: (a: number, b: number) => number = (
+    a: number,
+    b: number,
+  ) => {
+    return 3 * point.action.call(point2, a * 2, b * 2);
   };
   const fakePoint: Partial<Point> = { action: callAction };
 

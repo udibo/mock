@@ -11,7 +11,9 @@ interface PassthroughTarget<T, U> {
   instance: U;
   method?: string | number | symbol;
   self?: ThisType<T> | ThisType<U>;
+  // deno-lint-ignore no-explicit-any
   args?: any[];
+  // deno-lint-ignore no-explicit-any
   returned?: any;
 }
 
@@ -19,13 +21,17 @@ interface PassthroughOptionsInstance<T, U> {
   instance: T;
   method: string | number | symbol;
   target: PassthroughTarget<T, U>;
+  // deno-lint-ignore no-explicit-any
   args?: any[];
+  // deno-lint-ignore no-explicit-any
   returned?: any;
 }
 interface PassthroughOptionsFunc<T, U> {
   func: Function;
   target: PassthroughTarget<T, U>;
+  // deno-lint-ignore no-explicit-any
   args?: any[];
+  // deno-lint-ignore no-explicit-any
   returned?: any;
 }
 export type PassthroughOptions<T, U> =
@@ -35,14 +41,18 @@ export type PassthroughOptions<T, U> =
 export function assertPassthrough<T, U>(
   options: PassthroughOptions<T, U>,
 ): void {
+  // deno-lint-ignore no-explicit-any
   const targetArgs: any[] = options.target.args ?? options.args ??
     [Symbol("arg1"), Symbol("arg2")];
+  // deno-lint-ignore no-explicit-any
   const targetReturned: any = options.target.returned ?? options.returned ??
     Symbol("returned");
+  // deno-lint-ignore no-explicit-any
   const passthroughArgs: any[] = options.args ?? targetArgs;
+  // deno-lint-ignore no-explicit-any
   const passthroughReturned: any = options.returned ?? targetReturned;
 
-  let target: Spy<any>;
+  let target: Spy<U>;
   if ("method" in options.target || "method" in options) {
     target = stub(
       options.target.instance,

@@ -2,11 +2,13 @@ import { assertEquals } from "../deps/std/testing/asserts.ts";
 import { stub, Stub } from "../stub.ts";
 
 class Cat {
+  // deno-lint-ignore no-explicit-any
   action(name: string): any {
     throw new Error("unimplemented");
   }
 }
 
+// deno-lint-ignore no-explicit-any
 function doAction(cat: Cat, action: string): any {
   return cat.action(action);
 }

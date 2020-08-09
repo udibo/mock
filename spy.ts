@@ -13,15 +13,20 @@ export class SpyError extends Error {
 /** An object containing call information recorded by a spy. */
 export interface SpyCall {
   /** Arguments passed to a function when called. */
+  // deno-lint-ignore no-explicit-any
   args: any[];
   /** The instance that a method was called on. */
+  // deno-lint-ignore no-explicit-any
   self?: any;
   /** The error value that was thrown by a function. */
+  // deno-lint-ignore no-explicit-any
   error?: any;
   /** The value that was returned by a function. */
+  // deno-lint-ignore no-explicit-any
   returned?: any;
 }
 
+// deno-lint-ignore no-explicit-any
 function isSpy<T>(func: any): func is Spy<T> {
   return typeof func === "function" &&
     Array.isArray((func as Spy<T>).calls);
@@ -57,6 +62,7 @@ export class SpyMixin<T> {
 
 /** A function or instance method wrapper that records all calls made to it. */
 export interface Spy<T> {
+  // deno-lint-ignore no-explicit-any
   (this: T | void, ...args: any[]): any;
   /**
    * Information about calls made to the function or instance method or getter/setter being spied on.
@@ -81,11 +87,13 @@ function spy<T>(
   method?: string | number | symbol,
 ): AnySpy<T> {
   const calls: SpyCall[] = [];
+  // deno-lint-ignore no-explicit-any
   const result: AnySpy<T> = function (this: T | void): any {
     if (spyInternal.restored) {
       throw new SpyError("instance method already restored");
     }
     const call: SpyCall = { args: [...arguments] };
+    // deno-lint-ignore no-explicit-any
     let returned: any;
     if (this) call.self = this;
     try {
@@ -128,6 +136,7 @@ function spy<T>(
     }
 
     let func: Func | null = null;
+    // deno-lint-ignore no-explicit-any
     let value: any;
     if (!spyInternal.methodDescriptor) {
       func = obj[methodKey];
@@ -149,6 +158,7 @@ function spy<T>(
         (() => value),
     );
     spyInternal.set = spy(
+      // deno-lint-ignore no-explicit-any
       spyInternal.methodDescriptor?.set ?? ((v: any) => {
         value = v;
       }),

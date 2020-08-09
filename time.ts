@@ -34,6 +34,7 @@ export class TimeError extends Error {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 function isFakeDate(instance: any): instance is FakeDate {
   return instance instanceof FakeDate;
 }
@@ -85,6 +86,7 @@ function FakeDateConstructor(
 ): void;
 function FakeDateConstructor(
   this: FakeDate | void,
+  // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): string | void {
   if (args.length === 0) args.push(FakeDate.now());
@@ -118,8 +120,11 @@ Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
   const propName: keyof NativeDate = name as keyof NativeDate;
   FakeDate.prototype[propName] = function (
     this: FakeDate,
+    // deno-lint-ignore no-explicit-any
     ...args: any[]
+    // deno-lint-ignore no-explicit-any
   ): any {
+    // deno-lint-ignore no-explicit-any
     return (this.date[propName] as (...args: any[]) => any).apply(
       this.date,
       args,
@@ -133,8 +138,10 @@ function* timerId() {
 }
 interface Timer {
   id: number;
+  // deno-lint-ignore no-explicit-any
   callback: (...args: any[]) => void;
   delay: number;
+  // deno-lint-ignore no-explicit-any
   args: any[];
   due: number;
   repeat: boolean;
@@ -224,8 +231,10 @@ export class FakeTime {
   }
 
   static setTimeout(
+    // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => void,
-    delay: number = 0,
+    delay = 0,
+    // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): number {
     if (!time) throw new TimeError("no fake time");
@@ -239,8 +248,10 @@ export class FakeTime {
   }
 
   static setInterval(
+    // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => void,
-    delay: number = 0,
+    delay = 0,
+    // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): number {
     if (!time) throw new TimeError("no fake time");
@@ -270,10 +281,12 @@ export class FakeTime {
   }
 
   private setTimer(
+    // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => void,
     delay = 0,
+    // deno-lint-ignore no-explicit-any
     args: any[],
-    repeat: boolean = false,
+    repeat = false,
   ): number {
     const id: number = this.timerId.next().value;
     delay = Math.max(repeat ? 1 : 0, Math.floor(delay));
@@ -297,10 +310,14 @@ export class FakeTime {
 
   /** Restores real time temporarily until callback returns and resolves. */
   static async restoreFor(
+    // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => Promise<any>,
+    // deno-lint-ignore no-explicit-any
     ...args: any[]
+    // deno-lint-ignore no-explicit-any
   ): Promise<any> {
     if (!time) throw new TimeError("no fake time");
+    // deno-lint-ignore no-explicit-any
     let result: any;
     time.restoreGlobals();
     try {
@@ -358,7 +375,7 @@ export class FakeTime {
    * Adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    */
-  tick(ms: number = 0) {
+  tick(ms = 0) {
     this.now += ms;
   }
 

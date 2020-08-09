@@ -41,6 +41,7 @@ Deno.test("spy default", () => {
 });
 
 Deno.test("spy function", () => {
+  // deno-lint-ignore no-explicit-any
   const func: Spy<void> = spy((value: any) => value);
   const expectedCalls: SpyCall[] = [];
   assertEquals(func.calls, expectedCalls);
@@ -178,6 +179,7 @@ Deno.test("spy instance method property descriptor", () => {
     configurable: true,
     enumerable: false,
     writable: false,
+    // deno-lint-ignore no-explicit-any
     value: function (...args: any[]) {
       return args[1];
     },
@@ -246,6 +248,7 @@ Deno.test("spy instance property getter/setter", () => {
     assertEquals(getter.calls, expectedGetterCalls);
     assertEquals(setter.calls, expectedSetterCalls);
 
+    // deno-lint-ignore no-explicit-any
     const replacement: (...args: any[]) => any = (...args: any[]) => args[1];
     assertStrictEquals(point.action = replacement, replacement);
     expectedSetterCalls.push({ self: point, args: [replacement] });

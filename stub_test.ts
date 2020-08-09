@@ -96,6 +96,7 @@ Deno.test("stub returns", () => {
 
 Deno.test("stub function", () => {
   const point = new Point(2, 3);
+  // deno-lint-ignore no-explicit-any
   let returns: any[] = [1, "b", 2, "d"];
   const func: Stub<Point> = stub(point, "action", () => returns.shift());
   const action: Stub<void> = func as unknown as Stub<void>;

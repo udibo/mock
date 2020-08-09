@@ -27,6 +27,7 @@ jobs:
         if: matrix.config.kind == 'lint'
         run: |
           deno fmt --check
+          deno lint --unstable
       - name: Test
         if: matrix.config.kind == 'test'
         run: deno test

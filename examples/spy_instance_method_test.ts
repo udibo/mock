@@ -2,6 +2,7 @@ import { assertEquals } from "../deps/std/testing/asserts.ts";
 import { spy, Spy } from "../spy.ts";
 
 class Database {
+  // deno-lint-ignore no-explicit-any
   private queries: any;
   constructor() {
     this.queries = {
@@ -15,6 +16,7 @@ class Database {
       },
     };
   }
+  // deno-lint-ignore no-explicit-any
   query(query: string, params: any[]): any[][] {
     return this.queries[query][params[0]]; // implementation not important for example
   }

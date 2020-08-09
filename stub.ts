@@ -5,6 +5,7 @@ import { Spy, SpyMixin, spy, SpyCall, SpyError } from "./spy.ts";
 /** An instance method wrapper that overrides the original method and records all calls made to it. */
 export interface Stub<T> extends Spy<T> {
   /** A queue of values that the stub will return. */
+  // deno-lint-ignore no-explicit-any
   returns: any[];
 }
 
@@ -13,6 +14,7 @@ function stub<T>(instance: T, method: string | number | symbol): Stub<T>;
 function stub<T>(
   instance: T,
   method: string | number | symbol,
+  // deno-lint-ignore no-explicit-any
   returns: any[],
 ): Stub<T>;
 function stub<T>(
@@ -23,6 +25,7 @@ function stub<T>(
 function stub<T>(
   instance: T,
   method: string | number | symbol,
+  // deno-lint-ignore no-explicit-any
   arrOrFunc?: Function | any[],
 ): Stub<T> {
   const stub: Stub<T> = spy(instance, method) as Stub<T>;
