@@ -1,27 +1,19 @@
 /** This module is browser compatible. */
+
 import {
   assertEquals,
-  assertStrictEq,
+  assertStrictEquals,
   AssertionError,
 } from "./deps/std/testing/asserts.ts";
 import { spy, Spy, stub } from "./stub.ts";
 
-interface PassthroughTargetInstance<T, U> {
+interface PassthroughTarget<T, U> {
   instance: U;
   method?: string | number | symbol;
   self?: ThisType<T> | ThisType<U>;
   args?: any[];
   returned?: any;
 }
-interface PassthroughTargetFunc<T, U> {
-  func: Function;
-  self?: ThisType<T> | ThisType<U>;
-  args?: any[];
-  returned?: any;
-}
-export type PassthroughTarget<T, U> =
-  | PassthroughTargetInstance<T, U>
-  | PassthroughTargetFunc<T, U>;
 
 interface PassthroughOptionsInstance<T, U> {
   instance: T;
@@ -47,27 +39,22 @@ export function assertPassthrough<T, U>(
     [Symbol("arg1"), Symbol("arg2")];
   const targetReturned: any = options.target.returned ?? options.returned ??
     Symbol("returned");
-  const instanceArgs: any[] = options.args ?? targetArgs;
-  const instanceReturned: any = options.returned ?? targetReturned;
+  const passthroughArgs: any[] = options.args ?? targetArgs;
+  const passthroughReturned: any = options.returned ?? targetReturned;
 
   let target: Spy<any>;
-  if ("instance" in options.target) {
-    if ("method" in options.target || "method" in options) {
-      target = stub(
-        options.target.instance,
-        options.target.method ??
-          (options as PassthroughOptionsInstance<T, U>).method,
-        () => targetReturned,
-      );
-    } else {
-      throw new Error("target instance or passthrough must have method");
-    }
+  if ("method" in options.target || "method" in options) {
+    target = stub(
+      options.target.instance,
+      options.target.method ??
+        (options as PassthroughOptionsInstance<T, U>).method,
+      () => targetReturned,
+    );
   } else {
-    target = spy(options.target.func);
+    throw new Error("target instance or passthrough must have method");
   }
 
   let func: T[keyof T] | Function;
-
   if ("instance" in options) {
     const instance: T = options.instance;
     const method: keyof T = options.method as keyof T;
@@ -82,9 +69,9 @@ export function assertPassthrough<T, U>(
     assertEquals(
       func.apply(
         (options as PassthroughOptionsInstance<T, U>).instance ?? null,
-        instanceArgs,
+        passthroughArgs,
       ),
-      instanceReturned,
+      passthroughReturned,
     );
   } catch (e) {
     throw new AssertionError(
@@ -92,12 +79,14 @@ export function assertPassthrough<T, U>(
         e.message.split("\n").slice(1).join("\n"),
     );
   } finally {
-    target.restore();
+    if ((options as PassthroughOptionsInstance<T, U>).instance) {
+      target.restore();
+    }
   }
 
   if ("self" in options.target) {
     try {
-      assertStrictEq(
+      assertStrictEquals(
         target.calls[0].self,
         options.target.self,
       );
@@ -119,19 +108,5 @@ export function assertPassthrough<T, U>(
       "target not called with expected args:\n" +
         e.message.split("\n").slice(1).join("\n"),
     );
-  }
-
-  if ("returned" in options.target) {
-    try {
-      assertEquals(
-        target.calls[0].returned,
-        targetReturned,
-      );
-    } catch (e) {
-      throw new AssertionError(
-        "target did not return expected value:\n" +
-          e.message.split("\n").slice(1).join("\n"),
-      );
-    }
   }
 }
