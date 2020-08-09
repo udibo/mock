@@ -1,3 +1,5 @@
+/** This module is browser compatible. */
+
 /** Creates a function that returns the instance the method was called on. */
 export function returnsThis<T>(): (...args: any[]) => ThisType<T> {
   return function <T>(this: T): ThisType<T> {

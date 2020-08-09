@@ -1,4 +1,5 @@
 /** This module is browser compatible. */
+
 import { applyInstanceMixins } from "./deps/udibo/mixins/apply.ts";
 
 /** An error related to spying on a function or instance method. */

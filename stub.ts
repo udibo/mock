@@ -1,4 +1,5 @@
 /** This module is browser compatible. */
+
 import { Spy, SpyMixin, spy, SpyCall, SpyError } from "./spy.ts";
 
 /** An instance method wrapper that overrides the original method and records all calls made to it. */
