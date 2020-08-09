@@ -1,17 +1,30 @@
 /** This module is browser compatible. */
-import { applyMixins } from "./deps/udibo/mixins/apply.ts";
-import { BinaryHeap, ascend } from "./deps/udibo/collections/binary_heap.ts";
 
-type NativeDate = Date;
-type NativeDateConstructor = DateConstructor;
+import { applyMixins } from "./deps/udibo/mixins/apply.ts";
+import { Vector } from "./deps/udibo/collections/vector.ts";
+import { RBTree } from "./deps/udibo/collections/trees/rb_tree.ts";
+import { ascend } from "./deps/udibo/collections/comparators.ts";
+import { delay as delayNative } from "./deps/std/async/delay.ts";
+
+export type NativeDate = Date;
+export type NativeDateConstructor = DateConstructor;
+export const NativeDate: NativeDateConstructor = Date;
 
 export const NativeTime = {
-  Date,
   setTimeout,
   clearTimeout,
   setInterval,
   clearInterval,
 };
+
+/** Resolves after the given number of milliseconds using real time. */
+export function delay(ms: number): Promise<void> {
+  return time
+    ? FakeTime.restoreFor(() => {
+      return delayNative(ms);
+    })
+    : delayNative(ms);
+}
 
 /** An error related to faking time. */
 export class TimeError extends Error {
@@ -76,14 +89,14 @@ function FakeDateConstructor(
 ): string | void {
   if (args.length === 0) args.push(FakeDate.now());
   if (isFakeDate(this)) {
-    this.date = new NativeTime.Date(...(args as []));
+    this.date = new NativeDate(...(args as []));
   } else {
-    return new NativeTime.Date(args[0]).toString();
+    return new NativeDate(args[0]).toString();
   }
 }
 class FakeDateMixin {
   static now(): number {
-    return time?.now ?? NativeTime.Date.now();
+    return time?.now ?? NativeDate.now();
   }
 
   [Symbol.toPrimitive](this: FakeDate, hint: "default"): string;
@@ -114,56 +127,93 @@ Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
   };
 });
 
-function* timeoutId() {
+function* timerId() {
   let i = 1;
   while (true) yield i++;
 }
-interface Timeout {
+interface Timer {
   id: number;
-  at: number;
   callback: (...args: any[]) => void;
+  delay: number;
   args: any[];
+  due: number;
+  repeat: boolean;
 }
-interface Interval extends Timeout {
-  step: number;
+
+export interface FakeTimeOptions {
+  /**
+   * The rate relative to real time at which fake time is updated.
+   * By default time only moves forward through calling tick or setting now.
+   * Set to 1 to have the fake time automatically tick foward at the same rate in milliseconds as real time.
+   */
+  advanceRate: number;
+  /**
+   * The frequency in milliseconds at which fake time is updated.
+   * If advanceRate is set, we will update the time every 10 milliseconds by default.
+   */
+  advanceFrequency?: number;
+}
+
+interface DueNode {
+  due: number;
+  timers: Vector<Timer>;
 }
 
 let time: FakeTime | undefined = undefined;
+/**
+ * Overrides real Date object and timer functions with fake ones that can be
+ * controlled through the fake time instance.
+ */
 export class FakeTime {
   private _now: number;
   private _start: number;
-  private timeoutId: Generator<number>;
-  private ignoreTimeouts: Set<number>;
-  private timeouts: BinaryHeap<Timeout>;
-  private intervals: BinaryHeap<Interval>;
+  private initializedAt: number;
+  private advanceRate: number;
+  private advanceFrequency: number;
+  private advanceIntervalId?: number;
 
-  constructor(start?: number | string | NativeDate) {
+  private timerId: Generator<number>;
+  private dueNodes: Map<number, DueNode>;
+  private dueTree: RBTree<DueNode>;
+
+  constructor(
+    start?: number | string | NativeDate | null,
+    options?: FakeTimeOptions,
+  ) {
     FakeTime.restore();
-    this._start = start instanceof NativeTime.Date
+    this.initializedAt = NativeDate.now();
+    this._start = start instanceof NativeDate
       ? start.valueOf()
       : typeof start === "number"
-      ? start
+      ? Math.floor(start)
       : typeof start === "string"
       ? (new Date(start)).valueOf()
-      : NativeTime.Date.now();
+      : this.initializedAt;
     if (Number.isNaN(this._start)) throw new TimeError("invalid start");
     this._now = this._start;
 
-    this.timeoutId = timeoutId();
-    this.ignoreTimeouts = new Set();
-    this.timeouts = new BinaryHeap(
-      (a: Timeout, b: Timeout) => ascend(a.at, b.at),
-    );
-    this.intervals = new BinaryHeap(
-      (a: Interval, b: Interval) => ascend(a.at, b.at),
+    this.timerId = timerId();
+    this.dueNodes = new Map();
+    this.dueTree = new RBTree(
+      (a: Partial<DueNode>, b: Partial<DueNode>) => ascend(a.due, b.due),
     );
 
+    this.overrideGlobals();
     time = this;
-    globalThis.Date = FakeDate;
-    globalThis.setTimeout = FakeTime.setTimeout;
-    globalThis.clearTimeout = FakeTime.clearTimeout;
-    globalThis.setInterval = FakeTime.setInterval;
-    globalThis.clearInterval = FakeTime.clearInterval;
+
+    this.advanceRate = Math.max(
+      0,
+      options?.advanceRate ? options.advanceRate : 0,
+    );
+    this.advanceFrequency = Math.max(
+      0,
+      options?.advanceFrequency ? options.advanceFrequency : 10,
+    );
+    if (this.advanceRate > 0) {
+      this.advanceIntervalId = NativeTime.setInterval.call(null, () => {
+        this.tick(this.advanceRate * this.advanceFrequency);
+      }, this.advanceFrequency);
+    }
   }
 
   static restore(): void {
@@ -179,18 +229,13 @@ export class FakeTime {
     ...args: any[]
   ): number {
     if (!time) throw new TimeError("no fake time");
-    const timeout: Timeout = {
-      callback,
-      args,
-      at: time.now + (delay > 0 ? delay : 0),
-      id: time.timeoutId.next().value,
-    };
-    time.timeouts.push(timeout);
-    return timeout.id;
+    return time.setTimer(callback, delay, args, false);
   }
-  static clearTimeout(timeoutId?: number): void {
+  static clearTimeout(id?: number): void {
     if (!time) throw new TimeError("no fake time");
-    if (typeof timeoutId === "number") time.ignoreTimeouts.add(timeoutId);
+    if (typeof id === "number" && time.dueNodes.has(id)) {
+      time.dueNodes.delete(id);
+    }
   }
 
   static setInterval(
@@ -199,62 +244,105 @@ export class FakeTime {
     ...args: any[]
   ): number {
     if (!time) throw new TimeError("no fake time");
-    const step: number = delay > 0 ? delay : 0;
-    const interval: Interval = {
-      callback,
-      args,
-      step,
-      at: time.now + step,
-      id: time.timeoutId.next().value,
-    };
-    time.intervals.push(interval);
-    return interval.id;
+    return time.setTimer(callback, delay, args, true);
   }
-  static clearInterval(timeoutId?: number): void {
+  static clearInterval(id?: number): void {
     if (!time) throw new TimeError("no fake time");
-    if (typeof timeoutId === "number") time.ignoreTimeouts.add(timeoutId);
+    if (typeof id === "number" && time.dueNodes.has(id)) {
+      time.dueNodes.delete(id);
+    }
   }
 
-  /** The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time. */
+  private overrideGlobals(): void {
+    globalThis.Date = FakeDate;
+    globalThis.setTimeout = FakeTime.setTimeout;
+    globalThis.clearTimeout = FakeTime.clearTimeout;
+    globalThis.setInterval = FakeTime.setInterval;
+    globalThis.clearInterval = FakeTime.clearInterval;
+  }
+
+  private restoreGlobals(): void {
+    globalThis.Date = NativeDate;
+    globalThis.setTimeout = NativeTime.setTimeout;
+    globalThis.clearTimeout = NativeTime.clearTimeout;
+    globalThis.setInterval = NativeTime.setInterval;
+    globalThis.clearInterval = NativeTime.clearInterval;
+  }
+
+  private setTimer(
+    callback: (...args: any[]) => void,
+    delay = 0,
+    args: any[],
+    repeat: boolean = false,
+  ): number {
+    const id: number = this.timerId.next().value;
+    delay = Math.max(repeat ? 1 : 0, Math.floor(delay));
+    const due: number = this.now + delay;
+    let dueNode: DueNode | null = this.dueTree.find({ due });
+    if (dueNode === null) {
+      dueNode = { due, timers: new Vector() };
+      this.dueTree.insert(dueNode);
+    }
+    dueNode.timers.push({
+      id,
+      callback,
+      args,
+      delay,
+      due,
+      repeat,
+    });
+    this.dueNodes.set(id, dueNode);
+    return id;
+  }
+
+  /** Restores real time temporarily until callback returns and resolves. */
+  static async restoreFor(
+    callback: (...args: any[]) => Promise<any>,
+    ...args: any[]
+  ): Promise<any> {
+    if (!time) throw new TimeError("no fake time");
+    let result: any;
+    time.restoreGlobals();
+    try {
+      result = await callback.apply(null, args);
+    } finally {
+      time.overrideGlobals();
+    }
+    return result;
+  }
+
+  /**
+   * The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
+   * When set, it will call any functions waiting to be called between the current and new fake time.
+   */
   get now(): number {
     return this._now;
   }
   set now(value: number) {
     if (value < this._now) throw new Error("time cannot go backwards");
-    let done: boolean = false;
-    let timeout: Timeout | undefined;
-    let interval: Interval | undefined;
-    do {
-      done = true;
-      timeout = this.timeouts.peek();
-      interval = this.intervals.peek();
-      if (timeout && this.ignoreTimeouts.has(timeout.id)) {
-        this.ignoreTimeouts.delete(timeout.id);
-        this.timeouts.pop();
-        done = false;
-      } else if (interval && this.ignoreTimeouts.has(interval.id)) {
-        this.ignoreTimeouts.delete(interval.id);
-        this.intervals.pop();
-        done = false;
-      } else if (
-        timeout && timeout.at <= value &&
-        (!interval || timeout.at < interval.at)
-      ) {
-        this._now = timeout.at;
-        this.timeouts.pop();
-        timeout.callback.apply(null, timeout.args);
-        done = false;
-      } else if (interval && interval.at <= value) {
-        this._now = interval.at;
-        this.intervals.pop();
-        this.intervals.push({
-          ...interval,
-          at: interval.at + interval.step,
-        });
-        interval.callback.apply(null, interval.args);
-        done = false;
+    let dueNode: DueNode | null = this.dueTree.min();
+    while (dueNode && dueNode.due <= value) {
+      const timer: Timer | undefined = dueNode.timers.shift();
+      if (timer && this.dueNodes.has(timer.id)) {
+        this._now = timer.due;
+        if (timer.repeat) {
+          const due: number = timer.due + timer.delay;
+          let dueNode: DueNode | null = this.dueTree.find({ due });
+          if (dueNode === null) {
+            dueNode = { due, timers: new Vector() };
+            this.dueTree.insert(dueNode);
+          }
+          dueNode.timers.push({ ...timer, due });
+          this.dueNodes.set(timer.id, dueNode);
+        } else {
+          this.dueNodes.delete(timer.id);
+        }
+        timer.callback.apply(null, timer.args);
+      } else if (!timer) {
+        this.dueTree.remove(dueNode);
+        dueNode = this.dueTree.min();
       }
-    } while (!done);
+    }
     this._now = value;
   }
 
@@ -266,8 +354,11 @@ export class FakeTime {
     throw new Error("cannot change start time after initialization");
   }
 
-  /** Adds the specified number of milliseconds to the fake time. */
-  tick(ms: number) {
+  /**
+   * Adds the specified number of milliseconds to the fake time.
+   * This will call any functions waiting to be called between the current and new fake time.
+   */
+  tick(ms: number = 0) {
     this.now += ms;
   }
 
@@ -275,10 +366,7 @@ export class FakeTime {
   restore(): void {
     if (!time) throw new TimeError("time already restored");
     time = undefined;
-    globalThis.Date = NativeTime.Date;
-    globalThis.setTimeout = NativeTime.setTimeout;
-    globalThis.clearTimeout = NativeTime.clearTimeout;
-    globalThis.setInterval = NativeTime.setInterval;
-    globalThis.clearInterval = NativeTime.clearInterval;
+    this.restoreGlobals();
+    if (this.advanceIntervalId) clearInterval(this.advanceIntervalId);
   }
 }

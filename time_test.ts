@@ -1,12 +1,14 @@
 import {
+  assert,
   assertEquals,
   assertNotEquals,
-  assertStrictEq,
+  assertStrictEquals,
 } from "./deps/std/testing/asserts.ts";
 import {
-  NativeTime,
+  NativeDate,
   FakeDate,
   FakeTime,
+  delay,
 } from "./time.ts";
 import { spy, Spy, SpyCall } from "./spy.ts";
 import { assertPassthrough } from "./asserts.ts";
@@ -15,39 +17,39 @@ import { fromNow } from "./callbacks.ts";
 Deno.test("FakeDate parse and UTC behave the same", () => {
   assertEquals(
     FakeDate.UTC(96, 1, 2, 3, 4, 5),
-    NativeTime.Date.UTC(96, 1, 2, 3, 4, 5),
+    NativeDate.UTC(96, 1, 2, 3, 4, 5),
   );
   assertEquals(
     FakeDate.parse("04 Dec 1995 00:12:00 GMT"),
-    NativeTime.Date.parse("04 Dec 1995 00:12:00 GMT"),
+    NativeDate.parse("04 Dec 1995 00:12:00 GMT"),
   );
 });
 
 Deno.test("Date unchanged if FakeTime is uninitialized", () => {
   FakeTime.restore();
   assertNotEquals(Date, FakeDate);
-  assertStrictEq(Date, NativeTime.Date);
+  assertStrictEquals(Date, NativeDate);
 });
 
 Deno.test("Date is FakeDate if FakeTime is initialized", () => {
   const time: FakeTime = new FakeTime(9001);
   try {
-    assertNotEquals(Date, NativeTime.Date);
-    assertStrictEq(Date, FakeDate);
+    assertNotEquals(Date, NativeDate);
+    assertStrictEquals(Date, FakeDate);
   } finally {
     time.restore();
   }
   assertNotEquals(Date, FakeDate);
-  assertStrictEq(Date, NativeTime.Date);
+  assertStrictEquals(Date, NativeDate);
 });
 
 Deno.test("FakeDate.now uses Date.now if FakeTime is uninitialized", () => {
   FakeTime.restore();
-  const now: Spy<DateConstructor> = spy(NativeTime.Date, "now");
+  const now: Spy<DateConstructor> = spy(NativeDate, "now");
   try {
     const result = FakeDate.now();
     assertEquals(now.calls.length, 1);
-    assertEquals(now.calls[0].self, NativeTime.Date);
+    assertEquals(now.calls[0].self, NativeDate);
     assertEquals(now.calls[0].args, []);
     assertEquals(result, now.calls[0].returned);
   } finally {
@@ -56,8 +58,8 @@ Deno.test("FakeDate.now uses Date.now if FakeTime is uninitialized", () => {
 });
 
 Deno.test("FakeDate.now returns current fake time if FakeTime initialized", () => {
-  const now: Spy<DateConstructor> = spy(NativeTime.Date, "now");
   const time: FakeTime = new FakeTime(9001);
+  const now: Spy<DateConstructor> = spy(NativeDate, "now");
   try {
     assertEquals(FakeDate.now(), 9001);
     assertEquals(now.calls.length, 0);
@@ -97,25 +99,35 @@ Deno.test("FakeDate instance methods passthrough to Date instance methods", () =
 Deno.test("timeout functions unchanged if FakeTime is uninitialized", () => {
   FakeTime.restore();
   assertNotEquals(setTimeout, FakeTime.setTimeout);
-  assertStrictEq(setTimeout, NativeTime.setTimeout);
   assertNotEquals(clearTimeout, FakeTime.clearTimeout);
-  assertStrictEq(clearTimeout, NativeTime.clearTimeout);
 });
 
 Deno.test("timeout functions are fake if FakeTime is initialized", () => {
   const time: FakeTime = new FakeTime();
   try {
-    assertNotEquals(setTimeout, NativeTime.setTimeout);
-    assertStrictEq(setTimeout, FakeTime.setTimeout);
-    assertNotEquals(clearTimeout, NativeTime.clearTimeout);
-    assertStrictEq(clearTimeout, FakeTime.clearTimeout);
+    assertStrictEquals(setTimeout, FakeTime.setTimeout);
+    assertStrictEquals(clearTimeout, FakeTime.clearTimeout);
   } finally {
     time.restore();
   }
   assertNotEquals(setTimeout, FakeTime.setTimeout);
-  assertStrictEq(setTimeout, NativeTime.setTimeout);
   assertNotEquals(clearTimeout, FakeTime.clearTimeout);
-  assertStrictEq(clearTimeout, NativeTime.clearTimeout);
+});
+
+Deno.test("FakeTime only ticks forward when setting now or calling tick", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+
+  try {
+    assertEquals(Date.now(), start);
+    time.tick(5);
+    assertEquals(Date.now(), start + 5);
+    time.now = start + 1000;
+    assertEquals(Date.now(), start + 1000);
+    assert(NativeDate.now() < start + 1000);
+  } finally {
+    time.restore();
+  }
 });
 
 Deno.test("FakeTime controls timeouts", () => {
@@ -170,25 +182,19 @@ Deno.test("FakeTime controls timeouts", () => {
 Deno.test("interval functions unchanged if FakeTime is uninitialized", () => {
   FakeTime.restore();
   assertNotEquals(setInterval, FakeTime.setInterval);
-  assertStrictEq(setInterval, NativeTime.setInterval);
   assertNotEquals(clearInterval, FakeTime.clearInterval);
-  assertStrictEq(clearInterval, NativeTime.clearInterval);
 });
 
 Deno.test("interval functions are fake if FakeTime is initialized", () => {
   const time: FakeTime = new FakeTime();
   try {
-    assertNotEquals(setInterval, NativeTime.setInterval);
-    assertStrictEq(setInterval, FakeTime.setInterval);
-    assertNotEquals(clearInterval, NativeTime.clearInterval);
-    assertStrictEq(clearInterval, FakeTime.clearInterval);
+    assertStrictEquals(setInterval, FakeTime.setInterval);
+    assertStrictEquals(clearInterval, FakeTime.clearInterval);
   } finally {
     time.restore();
   }
   assertNotEquals(setInterval, FakeTime.setInterval);
-  assertStrictEq(setInterval, NativeTime.setInterval);
   assertNotEquals(clearInterval, FakeTime.clearInterval);
-  assertStrictEq(clearInterval, NativeTime.clearInterval);
 });
 
 Deno.test("FakeTime controls intervals", () => {
@@ -256,6 +262,98 @@ Deno.test("FakeTime calls timeout and interval callbacks in correct order", () =
     assertEquals(cb.calls, expected);
     assertEquals(timeoutCb.calls, timeoutExpected);
     assertEquals(intervalCb.calls, intervalExpected);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor restores real time temporarily", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+
+  try {
+    assertEquals(Date.now(), start);
+    time.tick(1000);
+    assertEquals(Date.now(), start + 1000);
+    assert(NativeDate.now() < start + 1000);
+    await FakeTime.restoreFor(async () => {
+      assert(Date.now() < start + 1000);
+    });
+    assertEquals(Date.now(), start + 1000);
+    assert(NativeDate.now() < start + 1000);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("delay uses real time", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+
+  try {
+    assertEquals(Date.now(), start);
+    await delay(20);
+    assert(NativeDate.now() >= start + 20);
+    assertEquals(Date.now(), start);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime ticks forward when advanceRate is set", async () => {
+  let time: FakeTime = new FakeTime(null, { advanceRate: 1 });
+  let start: number = Date.now();
+
+  try {
+    assertEquals(Date.now(), start);
+    await delay(11);
+    assertEquals(Date.now(), start + 10);
+    await delay(6);
+    assertEquals(Date.now(), start + 10);
+    await delay(16);
+    assertEquals(Date.now(), start + 30);
+    time.restore();
+
+    time = new FakeTime(null, { advanceRate: 1000 });
+    start = Date.now();
+    assertEquals(Date.now(), start);
+    await delay(11);
+    assertEquals(Date.now(), start + 10000);
+    await delay(6);
+    assertEquals(Date.now(), start + 10000);
+    await delay(16);
+    assertEquals(Date.now(), start + 30000);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime ticks forward at advanceFrequency when advanceRate is set", async () => {
+  let time: FakeTime = new FakeTime(
+    null,
+    { advanceRate: 1, advanceFrequency: 15 },
+  );
+  let start: number = Date.now();
+
+  try {
+    assertEquals(Date.now(), start);
+    await delay(16);
+    assertEquals(Date.now(), start + 15);
+    await delay(11);
+    assertEquals(Date.now(), start + 15);
+    await delay(21);
+    assertEquals(Date.now(), start + 45);
+    time.restore();
+
+    time = new FakeTime(null, { advanceRate: 1000, advanceFrequency: 15 });
+    start = Date.now();
+    assertEquals(Date.now(), start);
+    await delay(16);
+    assertEquals(Date.now(), start + 15000);
+    await delay(11);
+    assertEquals(Date.now(), start + 15000);
+    await delay(21);
+    assertEquals(Date.now(), start + 45000);
   } finally {
     time.restore();
   }
