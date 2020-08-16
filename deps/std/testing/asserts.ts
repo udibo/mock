@@ -6,4 +6,4 @@ export {
   assertThrows,
   assertThrowsAsync,
   AssertionError,
-} from "https://deno.land/std@0.64.0/testing/asserts.ts";
+} from "https://deno.land/std@0.65.0/testing/asserts.ts";
