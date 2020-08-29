@@ -20,20 +20,23 @@ function stub<T>(
 function stub<T>(
   instance: T,
   method: string | number | symbol,
-  func: Function,
+  // deno-lint-ignore no-explicit-any
+  func: (...args: any[]) => any,
 ): Stub<T>;
 function stub<T>(
   instance: T,
   method: string | number | symbol,
   // deno-lint-ignore no-explicit-any
-  arrOrFunc?: Function | any[],
+  arrOrFunc?: ((...args: any[]) => any) | any[],
 ): Stub<T> {
   const stub: Stub<T> = spy(instance, method) as Stub<T>;
   const stubInternal: SpyMixin<T> = stub as unknown as SpyMixin<T>;
   stub.returns = Array.isArray(arrOrFunc) ? arrOrFunc : [];
-  const func: Function = typeof arrOrFunc === "function"
+  // deno-lint-ignore no-explicit-any
+  const func: (...args: any) => any = typeof arrOrFunc === "function"
     ? function (this: T) {
-      return arrOrFunc.apply(this, arguments);
+      // deno-lint-ignore no-explicit-any
+      return arrOrFunc.apply(this, arguments as unknown as any[]);
     }
     : typeof arrOrFunc === "undefined"
     ? () => undefined
@@ -41,7 +44,10 @@ function stub<T>(
       throw new SpyError("no return for call");
     };
   stubInternal.func = function () {
-    if (stub.returns.length === 0) return func.apply(this, arguments);
+    if (stub.returns.length === 0) {
+      // deno-lint-ignore no-explicit-any
+      return func.apply(this, arguments as unknown as any[]);
+    }
     return stub.returns.shift();
   };
   return stub;

@@ -34,7 +34,8 @@ function isSpy<T>(func: any): func is Spy<T> {
 
 export class SpyMixin<T> {
   calls: SpyCall[];
-  func?: Function;
+  // deno-lint-ignore no-explicit-any
+  func?: (...args: any[]) => any;
   obj?: T;
   method?: keyof T;
   methodDescriptor?: PropertyDescriptor;
@@ -80,10 +81,12 @@ export interface Spy<T> {
 type AnySpy<T> = Spy<T> | Spy<void>;
 type AnySpyInternal<T> = SpyMixin<T> | SpyMixin<void>;
 function spy(): Spy<void>;
-function spy(func: Function): Spy<void>;
+// deno-lint-ignore no-explicit-any
+function spy(func: (...args: any[]) => any): Spy<void>;
 function spy<T>(obj: T, method: string | number | symbol): Spy<T>;
 function spy<T>(
-  objOrFunc?: T | Function,
+  // deno-lint-ignore no-explicit-any
+  objOrFunc?: T | ((...args: any[]) => any),
   method?: string | number | symbol,
 ): AnySpy<T> {
   const calls: SpyCall[] = [];
@@ -100,7 +103,8 @@ function spy<T>(
       if (typeof spyInternal.func === "function") {
         returned = spyInternal.func.apply(this, Array.from(arguments));
       } else {
-        const func: Function = spyInternal.get?.call(undefined);
+        // deno-lint-ignore no-explicit-any
+        const func: (...args: any[]) => any = spyInternal.get?.call(undefined);
         if (typeof func === "function") {
           func.apply(this, Array.from(arguments));
         } else {
@@ -147,7 +151,8 @@ function spy<T>(
       if (isSpy(func)) {
         console.error("already spying on function");
       }
-      spyInternal.func = func;
+      // deno-lint-ignore no-explicit-any
+      spyInternal.func = func as unknown as (...args: any[]) => any;
       value = result;
     } else {
       value = func;
@@ -173,7 +178,8 @@ function spy<T>(
       },
     });
   } else if (typeof objOrFunc === "function") {
-    spyInternal.func = objOrFunc;
+    // deno-lint-ignore no-explicit-any
+    spyInternal.func = objOrFunc as (...args: any[]) => any;
   } else {
     spyInternal.func = () => undefined;
   }

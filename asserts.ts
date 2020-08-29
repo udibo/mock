@@ -27,7 +27,8 @@ interface PassthroughOptionsInstance<T, U> {
   returned?: any;
 }
 interface PassthroughOptionsFunc<T, U> {
-  func: Function;
+  // deno-lint-ignore no-explicit-any
+  func: (...args: any[]) => any;
   target: PassthroughTarget<T, U>;
   // deno-lint-ignore no-explicit-any
   args?: any[];
@@ -64,11 +65,13 @@ export function assertPassthrough<T, U>(
     throw new Error("target instance or passthrough must have method");
   }
 
-  let func: T[keyof T] | Function;
+  // deno-lint-ignore no-explicit-any
+  let func: ((...args: any[]) => any);
   if ("instance" in options) {
     const instance: T = options.instance;
     const method: keyof T = options.method as keyof T;
-    func = instance[method];
+    // deno-lint-ignore no-explicit-any
+    func = instance[method] as unknown as ((...args: any[]) => any);
   } else {
     func = options.func;
   }

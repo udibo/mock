@@ -1,4 +1,4 @@
 export {
   applyMixins,
   applyInstanceMixins,
-} from "https://raw.githubusercontent.com/udibo/mixins/v0.4.0/apply.ts";
+} from "https://deno.land/x/mixins@v0.5.0/apply.ts";
