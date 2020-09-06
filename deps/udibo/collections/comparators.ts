@@ -1,1 +1,1 @@
-export { ascend } from "https://raw.githubusercontent.com/udibo/collections/v0.4.0/comparators.ts";
+export { ascend } from "https://deno.land/x/collections@v0.5.2/comparators.ts";
