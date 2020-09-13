@@ -2,22 +2,24 @@
 
 export {
   SpyError,
-  SpyCall,
-  Spy,
   spy,
 } from "./spy.ts";
-export {
-  Stub,
-  stub,
-} from "./stub.ts";
+export type {
+  SpyCall,
+  Spy,
+} from "./spy.ts";
+export { stub } from "./stub.ts";
+export type { Stub } from "./stub.ts";
 export {
   NativeDate,
-  NativeDateConstructor,
   NativeTime,
   FakeTime,
   FakeDate,
-  FakeDateConstructor,
   TimeError,
+} from "./time.ts";
+export type {
+  NativeDateConstructor,
+  FakeDateConstructor,
 } from "./time.ts";
 export {
   fromNow,
