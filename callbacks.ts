@@ -11,8 +11,9 @@ export function returnsThis<T>(): (...args: any[]) => ThisType<T> {
 /** Creates a function that returns one of its arguments. */
 // deno-lint-ignore no-explicit-any
 export function returnsArg(idx: number): (...args: any[]) => any {
-  return function () {
-    return arguments[idx];
+  // deno-lint-ignore no-explicit-any
+  return function (...args: any[]) {
+    return args[idx];
   };
 }
 
@@ -22,8 +23,9 @@ export function returnsArgs(
   end?: number,
   // deno-lint-ignore no-explicit-any
 ): (...args: any[]) => any {
-  return function () {
-    return Array.prototype.slice.call(arguments, start, end);
+  // deno-lint-ignore no-explicit-any
+  return function (...args: any[]) {
+    return Array.prototype.slice.call(args, start, end);
   };
 }
 

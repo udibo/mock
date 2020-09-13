@@ -91,22 +91,22 @@ function spy<T>(
 ): AnySpy<T> {
   const calls: SpyCall[] = [];
   // deno-lint-ignore no-explicit-any
-  const result: AnySpy<T> = function (this: T | void): any {
+  const result: AnySpy<T> = function (this: T | void, ...args: any[]): any {
     if (spyInternal.restored) {
       throw new SpyError("instance method already restored");
     }
-    const call: SpyCall = { args: [...arguments] };
+    const call: SpyCall = { args };
     // deno-lint-ignore no-explicit-any
     let returned: any;
     if (this) call.self = this;
     try {
       if (typeof spyInternal.func === "function") {
-        returned = spyInternal.func.apply(this, Array.from(arguments));
+        returned = spyInternal.func.apply(this, Array.from(args));
       } else {
         // deno-lint-ignore no-explicit-any
         const func: (...args: any[]) => any = spyInternal.get?.call(undefined);
         if (typeof func === "function") {
-          func.apply(this, Array.from(arguments));
+          func.apply(this, Array.from(args));
         } else {
           throw new SpyError("not a function");
         }
@@ -173,8 +173,9 @@ function spy<T>(
       get: function () {
         return spyInternal.get?.call(this);
       },
-      set: function () {
-        spyInternal.set?.apply(this, Array.from(arguments));
+      // deno-lint-ignore no-explicit-any
+      set: function (...args: any[]) {
+        spyInternal.set?.apply(this, Array.from(args));
       },
     });
   } else if (typeof objOrFunc === "function") {

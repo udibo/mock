@@ -33,29 +33,31 @@ function stub<T>(
   const stubInternal: SpyMixin<T> = stub as unknown as SpyMixin<T>;
   stub.returns = Array.isArray(arrOrFunc) ? arrOrFunc : [];
   // deno-lint-ignore no-explicit-any
-  const func: (...args: any) => any = typeof arrOrFunc === "function"
-    ? function (this: T) {
-      // deno-lint-ignore no-explicit-any
-      return arrOrFunc.apply(this, arguments as unknown as any[]);
-    }
+  const func: (...args: any[]) => any = typeof arrOrFunc === "function"
+    ? // deno-lint-ignore no-explicit-any
+      function (this: T, ...args: any[]) {
+        return arrOrFunc.apply(this, args);
+      }
     : typeof arrOrFunc === "undefined"
     ? () => undefined
     : () => {
       throw new SpyError("no return for call");
     };
-  stubInternal.func = function () {
+  // deno-lint-ignore no-explicit-any
+  stubInternal.func = function (...args: any[]) {
     if (stub.returns.length === 0) {
-      // deno-lint-ignore no-explicit-any
-      return func.apply(this, arguments as unknown as any[]);
+      return func.apply(this, args);
     }
     return stub.returns.shift();
   };
   return stub;
 }
 
-export {
+export type {
   Spy,
   SpyCall,
+};
+export {
   SpyError,
   spy,
   stub,
