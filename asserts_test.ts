@@ -2,7 +2,7 @@ import {
   assertThrows,
   AssertionError,
 } from "./deps/std/testing/asserts.ts";
-import { assertPassthrough } from "./asserts.ts";
+import { assertPassthrough, PassthroughOptions } from "./asserts.ts";
 import { Point } from "./test_shared.ts";
 
 Deno.test("assertPassthrough function", () => {
@@ -177,5 +177,38 @@ Deno.test("assertPassthrough instance", () => {
       }),
     AssertionError,
     "passthrough did not return expected value",
+  );
+  assertThrows(
+    () =>
+      assertPassthrough({
+        instance: fakePoint,
+        args: [5, 8],
+        returned: 9,
+        target: {
+          instance: point,
+          self: point2,
+          args: [10, 16],
+          returned: 3,
+        },
+      } as unknown as PassthroughOptions<Partial<Point>, Point>),
+    Error,
+    "target instance or passthrough must have method",
+  );
+  assertThrows(
+    () =>
+      assertPassthrough({
+        instance: fakePoint,
+        method: "invalid",
+        args: [5, 8],
+        returned: 9,
+        target: {
+          instance: point,
+          self: point2,
+          args: [10, 16],
+          returned: 3,
+        },
+      }),
+    Error,
+    "passthrough not a function",
   );
 });

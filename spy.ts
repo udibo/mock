@@ -33,7 +33,6 @@ function isSpy<T>(func: any): func is Spy<T> {
 }
 
 export class SpyMixin<T> {
-  calls: SpyCall[];
   // deno-lint-ignore no-explicit-any
   func?: (...args: any[]) => any;
   obj?: T;
@@ -42,10 +41,6 @@ export class SpyMixin<T> {
   get?: Spy<T>;
   set?: Spy<T>;
   restored?: boolean;
-
-  constructor() {
-    this.calls = [];
-  }
 
   restore(): void {
     if (this.obj && this.method) {
@@ -106,7 +101,7 @@ function spy<T>(
         // deno-lint-ignore no-explicit-any
         const func: (...args: any[]) => any = spyInternal.get?.call(undefined);
         if (typeof func === "function") {
-          func.apply(this, Array.from(args));
+          returned = func.apply(this, Array.from(args));
         } else {
           throw new SpyError("not a function");
         }

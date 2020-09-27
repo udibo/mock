@@ -75,24 +75,25 @@ Deno.test("FakeDate.now returns current fake time if FakeTime initialized", () =
 Deno.test("FakeDate instance methods passthrough to Date instance methods", () => {
   const now: FakeDate = new FakeDate("2020-05-25T05:00:00.12345Z");
   assertEquals(now.toISOString(), "2020-05-25T05:00:00.123Z");
-  Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
-    const propName: keyof Date = name as keyof Date;
+  Object.getOwnPropertyNames(Date.prototype).forEach((method: string) => {
     assertPassthrough({
+      method,
       instance: now,
-      method: propName,
       target: {
         instance: now.date,
         self: now.date,
       },
     });
   });
-  assertPassthrough({
-    instance: now,
-    method: Symbol.toPrimitive,
-    target: {
-      instance: now.date,
-      self: now.date,
-    },
+  Object.getOwnPropertySymbols(Date.prototype).forEach((method: symbol) => {
+    assertPassthrough({
+      method,
+      instance: now,
+      target: {
+        instance: now.date,
+        self: now.date,
+      },
+    });
   });
 });
 

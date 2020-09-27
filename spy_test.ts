@@ -138,6 +138,11 @@ Deno.test("spy instance method", () => {
     SpyError,
     "instance method already restored",
   );
+  assertThrows(
+    () => func(),
+    SpyError,
+    "instance method already restored",
+  );
 });
 
 Deno.test("spy instance method symbol", () => {
@@ -221,7 +226,7 @@ Deno.test("spy instance method property descriptor", () => {
   );
 });
 
-Deno.test("spy instance property getter/setter", () => {
+Deno.test("spy instance method property getter/setter", () => {
   const point = new Point(2, 3);
   const action: Spy<Point> = spy(point, "action");
   const getter: Spy<Point> = action.get as Spy<Point>;
@@ -274,6 +279,74 @@ Deno.test("spy instance property getter/setter", () => {
   assertEquals(getter.calls, expectedGetterCalls);
   assertThrows(
     () => action.restore(),
+    SpyError,
+    "instance method already restored",
+  );
+});
+
+Deno.test("spy instance property getter/setter", () => {
+  const point = new Point(2, 3);
+  const x: Spy<Point> = spy(point, "x");
+  const getter: Spy<Point> = x.get as Spy<Point>;
+  const setter: Spy<Point> = x.set as Spy<Point>;
+
+  const expectedCalls: SpyCall[] = [];
+  const expectedGetterCalls: SpyCall[] = [];
+  const expectedSetterCalls: SpyCall[] = [];
+  try {
+    assertEquals(x.calls, expectedCalls);
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+
+    assertStrictEquals(point.x, 2);
+    expectedGetterCalls.push({ self: point, args: [], returned: 2 });
+    assertEquals(x.calls, expectedCalls);
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+
+    assertThrows(() => x(1, 2), SpyError, "not a function");
+    expectedGetterCalls.push({ args: [], returned: 2 });
+    assertEquals(Object.keys(x.calls[0]).sort(), ["args", "error"]);
+    assertEquals(x.calls[0]?.args, [1, 2]);
+    assertEquals(x.calls[0]?.error?.name, "SpyError");
+    assertEquals(x.calls[0]?.error?.message, "not a function");
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+
+    // deno-lint-ignore no-explicit-any
+    const replacement: (...args: any[]) => any = (...args: any[]) => args[1];
+    assertStrictEquals(point.x = replacement as unknown as number, replacement);
+    expectedSetterCalls.push({ self: point, args: [replacement] });
+    assertEquals(x.calls.slice(1), expectedCalls);
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+
+    assertStrictEquals(point.x, replacement);
+    expectedGetterCalls.push({ self: point, args: [], returned: replacement });
+    assertEquals(x.calls.slice(1), expectedCalls);
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+
+    // deno-lint-ignore no-explicit-any
+    assertEquals((point.x as unknown as (...args: any[]) => any)(1, 2), 2);
+    expectedGetterCalls.push({ self: point, args: [], returned: replacement });
+    assertEquals(x.calls.slice(1), expectedCalls);
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+
+    assertEquals(x(1, 2), 2);
+    expectedCalls.push({ args: [1, 2], returned: 2 });
+    expectedGetterCalls.push({ args: [], returned: replacement });
+    assertEquals(x.calls.slice(1), expectedCalls);
+    assertEquals(getter.calls, expectedGetterCalls);
+    assertEquals(setter.calls, expectedSetterCalls);
+  } finally {
+    x.restore();
+  }
+  assertStrictEquals(point.x, 2);
+  assertEquals(getter.calls, expectedGetterCalls);
+  assertThrows(
+    () => x.restore(),
     SpyError,
     "instance method already restored",
   );

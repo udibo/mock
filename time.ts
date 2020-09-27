@@ -132,6 +132,21 @@ Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
     );
   };
 });
+Object.getOwnPropertySymbols(Date.prototype).forEach((name: symbol) => {
+  const propName: keyof NativeDate = name as unknown as keyof NativeDate;
+  FakeDate.prototype[propName] = function (
+    this: FakeDate,
+    // deno-lint-ignore no-explicit-any
+    ...args: any[]
+    // deno-lint-ignore no-explicit-any
+  ): any {
+    // deno-lint-ignore no-explicit-any
+    return (this.date[propName] as (...args: any[]) => any).apply(
+      this.date,
+      args,
+    );
+  };
+});
 
 function* timerId() {
   let i = 1;
