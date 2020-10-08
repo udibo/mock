@@ -4,13 +4,8 @@ import {
   assertNotEquals,
   assertStrictEquals,
 } from "./deps/std/testing/asserts.ts";
-import {
-  NativeDate,
-  FakeDate,
-  FakeTime,
-  delay,
-} from "./time.ts";
-import { spy, Spy, SpyCall } from "./spy.ts";
+import { delay, FakeDate, FakeTime, NativeDate } from "./time.ts";
+import { Spy, spy, SpyCall } from "./spy.ts";
 import { assertPassthrough } from "./asserts.ts";
 import { fromNow } from "./callbacks.ts";
 

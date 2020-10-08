@@ -5,12 +5,12 @@ import {
 } from "./deps/std/testing/asserts.ts";
 import {
   fromNow,
-  returnsThis,
+  rejects,
+  resolves,
   returnsArg,
   returnsArgs,
+  returnsThis,
   throws,
-  resolves,
-  rejects,
 } from "./callbacks.ts";
 
 Deno.test("returnsThis", () => {

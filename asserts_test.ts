@@ -1,7 +1,4 @@
-import {
-  assertThrows,
-  AssertionError,
-} from "./deps/std/testing/asserts.ts";
+import { AssertionError, assertThrows } from "./deps/std/testing/asserts.ts";
 import { assertPassthrough, PassthroughOptions } from "./asserts.ts";
 import { Point } from "./test_shared.ts";
 

@@ -1,10 +1,10 @@
 import {
   assertEquals,
   assertNotEquals,
-  assertThrows,
   assertStrictEquals,
+  assertThrows,
 } from "./deps/std/testing/asserts.ts";
-import { spy, Spy, SpyCall, SpyError } from "./spy.ts";
+import { Spy, spy, SpyCall, SpyError } from "./spy.ts";
 import { Point, stringifyPoint } from "./test_shared.ts";
 
 Deno.test("spy default", () => {

@@ -1,6 +1,6 @@
 /** This module is browser compatible. */
 
-import { Spy, SpyMixin, spy, SpyCall, SpyError } from "./spy.ts";
+import { Spy, spy, SpyCall, SpyError, SpyMixin } from "./spy.ts";
 
 /** An instance method wrapper that overrides the original method and records all calls made to it. */
 export interface Stub<T> extends Spy<T> {
@@ -53,12 +53,5 @@ function stub<T>(
   return stub;
 }
 
-export type {
-  Spy,
-  SpyCall,
-};
-export {
-  SpyError,
-  spy,
-  stub,
-};
+export type { Spy, SpyCall };
+export { spy, SpyError, stub };

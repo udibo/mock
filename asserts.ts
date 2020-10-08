@@ -2,10 +2,10 @@
 
 import {
   assertEquals,
-  assertStrictEquals,
   AssertionError,
+  assertStrictEquals,
 } from "./deps/std/testing/asserts.ts";
-import { spy, Spy, stub } from "./stub.ts";
+import { Spy, spy, stub } from "./stub.ts";
 
 interface PassthroughTarget<T, U> {
   instance: U;

@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps/std/testing/asserts.ts";
-import { stub, Stub } from "../stub.ts";
+import { Stub, stub } from "../stub.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any

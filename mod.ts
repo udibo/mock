@@ -1,32 +1,23 @@
 /** This module is browser compatible. */
 
-export {
-  SpyError,
-  spy,
-} from "./spy.ts";
-export type {
-  SpyCall,
-  Spy,
-} from "./spy.ts";
+export { spy, SpyError } from "./spy.ts";
+export type { Spy, SpyCall } from "./spy.ts";
 export { stub } from "./stub.ts";
 export type { Stub } from "./stub.ts";
 export {
+  FakeDate,
+  FakeTime,
   NativeDate,
   NativeTime,
-  FakeTime,
-  FakeDate,
   TimeError,
 } from "./time.ts";
-export type {
-  NativeDateConstructor,
-  FakeDateConstructor,
-} from "./time.ts";
+export type { FakeDateConstructor, NativeDateConstructor } from "./time.ts";
 export {
   fromNow,
-  returnsThis,
+  rejects,
+  resolves,
   returnsArg,
   returnsArgs,
+  returnsThis,
   throws,
-  resolves,
-  rejects,
 } from "./callbacks.ts";

@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps/std/testing/asserts.ts";
-import { spy, Spy } from "../spy.ts";
+import { Spy, spy } from "../spy.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
