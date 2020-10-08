@@ -34,19 +34,19 @@ function stub<T>(
   stub.returns = Array.isArray(arrOrFunc) ? arrOrFunc : [];
   // deno-lint-ignore no-explicit-any
   const func: (...args: any[]) => any = typeof arrOrFunc === "function"
-    ? // deno-lint-ignore no-explicit-any
-      function (this: T, ...args: any[]) {
-        return arrOrFunc.apply(this, args);
-      }
+    ? function (this: T) {
+      // deno-lint-ignore no-explicit-any
+      return arrOrFunc.apply(this, arguments as unknown as any[]);
+    }
     : typeof arrOrFunc === "undefined"
     ? () => undefined
     : () => {
       throw new SpyError("no return for call");
     };
-  // deno-lint-ignore no-explicit-any
-  stubInternal.func = function (...args: any[]) {
+  stubInternal.func = function () {
     if (stub.returns.length === 0) {
-      return func.apply(this, args);
+      // deno-lint-ignore no-explicit-any
+      return func.apply(this, arguments as unknown as any[]);
     }
     return stub.returns.shift();
   };

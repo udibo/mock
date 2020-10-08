@@ -104,11 +104,10 @@ class FakeDateMixin {
   [Symbol.toPrimitive](this: FakeDate, hint: "default"): string;
   [Symbol.toPrimitive](this: FakeDate, hint: "string"): string;
   [Symbol.toPrimitive](this: FakeDate, hint: "number"): number;
-  // deno-lint-ignore no-explicit-any
-  [Symbol.toPrimitive](this: FakeDate, ...args: any[]): string | number {
+  [Symbol.toPrimitive](this: FakeDate, hint: string): string | number {
     return this.date[Symbol.toPrimitive].apply(
       this.date,
-      args as [string],
+      Array.from(arguments) as [string],
     );
   }
 }
