@@ -12,7 +12,6 @@ export function returnsThis<T>(): (...args: any[]) => ThisType<T> {
 // deno-lint-ignore no-explicit-any
 export function returnsArg(idx: number): (...args: any[]) => any {
   return function () {
-    console.log(arguments);
     return arguments[idx];
   };
 }
