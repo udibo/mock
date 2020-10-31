@@ -17,10 +17,6 @@ export function returnsArg(idx: number): (...args: any[]) => any {
   };
 }
 
-function myFunc() {
-  console.log(arguments);
-}
-
 /** Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end. */
 export function returnsArgs(
   start = 0,
