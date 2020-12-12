@@ -110,7 +110,7 @@ Deno.test("timeout functions are fake if FakeTime is initialized", () => {
   assertNotEquals(clearTimeout, FakeTime.clearTimeout);
 });
 
-Deno.test("FakeTime only ticks forward when setting now or calling tick", async () => {
+Deno.test("FakeTime only ticks forward when setting now or calling tick", () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
 
@@ -272,7 +272,7 @@ Deno.test("FakeTime restoreFor restores real time temporarily", async () => {
     time.tick(1000);
     assertEquals(Date.now(), start + 1000);
     assert(NativeDate.now() < start + 1000);
-    await FakeTime.restoreFor(async () => {
+    await FakeTime.restoreFor(() => {
       assert(Date.now() < start + 1000);
     });
     assertEquals(Date.now(), start + 1000);

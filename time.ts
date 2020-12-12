@@ -326,7 +326,7 @@ export class FakeTime {
   /** Restores real time temporarily until callback returns and resolves. */
   static async restoreFor(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => Promise<any>,
+    callback: (...args: any[]) => Promise<any> | any,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
     // deno-lint-ignore no-explicit-any
