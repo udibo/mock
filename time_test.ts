@@ -195,7 +195,6 @@ Deno.test("interval functions are fake if FakeTime is initialized", () => {
 
 Deno.test("FakeTime controls intervals", () => {
   const time: FakeTime = new FakeTime();
-  const start: number = Date.now();
   const cb: Spy<void> = spy(fromNow());
   const expected: SpyCall[] = [];
   try {
@@ -211,6 +210,10 @@ Deno.test("FakeTime controls intervals", () => {
     expected.push({ args: [], returned: 2000 });
     expected.push({ args: [], returned: 3000 });
     assertEquals(cb.calls, expected);
+
+    clearInterval(interval);
+    time.tick(1000);
+    assertEquals(cb.calls, expected);
   } finally {
     time.restore();
   }
@@ -218,7 +221,6 @@ Deno.test("FakeTime controls intervals", () => {
 
 Deno.test("FakeTime calls timeout and interval callbacks in correct order", () => {
   const time: FakeTime = new FakeTime();
-  const start: number = Date.now();
   const cb: Spy<void> = spy(fromNow());
   const timeoutCb: Spy<void> = spy(cb);
   const intervalCb: Spy<void> = spy(cb);
@@ -255,6 +257,12 @@ Deno.test("FakeTime calls timeout and interval callbacks in correct order", () =
     expect = { args: [], returned: 3000 };
     expected.push(expect);
     intervalExpected.push(expect);
+    assertEquals(cb.calls, expected);
+    assertEquals(timeoutCb.calls, timeoutExpected);
+    assertEquals(intervalCb.calls, intervalExpected);
+
+    clearInterval(interval);
+    time.tick(1000);
     assertEquals(cb.calls, expected);
     assertEquals(timeoutCb.calls, timeoutExpected);
     assertEquals(intervalCb.calls, intervalExpected);

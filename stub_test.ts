@@ -2,7 +2,6 @@ import {
   assertEquals,
   assertNotEquals,
   assertThrows,
-  assertThrowsAsync,
 } from "./deps/std/testing/asserts.ts";
 import { SpyCall, SpyError, Stub, stub } from "./stub.ts";
 import { Point } from "./test_shared.ts";

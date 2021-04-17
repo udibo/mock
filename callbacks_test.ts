@@ -4,7 +4,6 @@ import {
   assertThrowsAsync,
 } from "./deps/std/testing/asserts.ts";
 import {
-  fromNow,
   rejects,
   resolves,
   returnsArg,

@@ -3,7 +3,7 @@ import { Stub, stub } from "../stub.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
-  query(query: string, params: any[]): any[][] {
+  query(_query: string, _params: any[]): any[][] {
     throw new Error("unimplemented");
   }
 }

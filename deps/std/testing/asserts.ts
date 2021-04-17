@@ -6,4 +6,4 @@ export {
   assertStrictEquals,
   assertThrows,
   assertThrowsAsync,
-} from "https://deno.land/std@0.80.0/testing/asserts.ts";
+} from "https://deno.land/std@0.93.0/testing/asserts.ts";

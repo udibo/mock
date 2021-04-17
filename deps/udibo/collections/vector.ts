@@ -1,1 +1,1 @@
-export { Vector } from "https://deno.land/x/collections@v0.10.2/vector.ts";
+export { Vector } from "https://deno.land/x/collections@v0.11.0/vector.ts";

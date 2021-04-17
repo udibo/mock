@@ -97,14 +97,16 @@ function FakeDateConstructor(
   }
 }
 class FakeDateMixin {
+  declare date: NativeDate;
+
   static now(): number {
     return time?.now ?? NativeDate.now();
   }
 
-  [Symbol.toPrimitive](this: FakeDate, hint: "default"): string;
-  [Symbol.toPrimitive](this: FakeDate, hint: "string"): string;
-  [Symbol.toPrimitive](this: FakeDate, hint: "number"): number;
-  [Symbol.toPrimitive](this: FakeDate, hint: string): string | number {
+  [Symbol.toPrimitive](hint: "default"): string;
+  [Symbol.toPrimitive](hint: "string"): string;
+  [Symbol.toPrimitive](hint: "number"): number;
+  [Symbol.toPrimitive](_hint: string): string | number {
     return this.date[Symbol.toPrimitive].apply(
       this.date,
       Array.from(arguments) as [string],

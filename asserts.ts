@@ -5,7 +5,7 @@ import {
   AssertionError,
   assertStrictEquals,
 } from "./deps/std/testing/asserts.ts";
-import { Spy, spy, stub } from "./stub.ts";
+import { Stub, stub } from "./stub.ts";
 
 interface PassthroughTarget<T, U> {
   instance: U;
@@ -53,7 +53,7 @@ export function assertPassthrough<T, U>(
   // deno-lint-ignore no-explicit-any
   const passthroughReturned: any = options.returned ?? targetReturned;
 
-  let target: Spy<U>;
+  let target: Stub<U>;
   if ("method" in options.target || "method" in options) {
     target = stub(
       options.target.instance,

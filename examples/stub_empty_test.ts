@@ -3,7 +3,7 @@ import { Stub, stub } from "../stub.ts";
 
 class Cat {
   // deno-lint-ignore no-explicit-any
-  action(name: string): any {
+  action(_name: string): any {
     throw new Error("unimplemented");
   }
 }

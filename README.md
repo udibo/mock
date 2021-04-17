@@ -1,8 +1,8 @@
 # Mock
 
-[![version](https://img.shields.io/badge/release-v0.9.4-success)](https://github.com/udibo/mock/tree/v0.9.4)
-[![deno doc](https://img.shields.io/badge/deno-doc-success?logo=deno)](https://doc.deno.land/https/deno.land/x/mock@v0.9.4/mod.ts)
-[![deno version](https://img.shields.io/badge/deno-v1.7.0-success?logo=deno)](https://github.com/denoland/deno/tree/v1.7.0)
+[![version](https://img.shields.io/badge/release-v0.9.5-success)](https://github.com/udibo/mock/tree/v0.9.5)
+[![deno doc](https://img.shields.io/badge/deno-doc-success?logo=deno)](https://doc.deno.land/https/deno.land/x/mock@v0.9.5/mod.ts)
+[![deno version](https://img.shields.io/badge/deno-v1.9.0-success?logo=deno)](https://github.com/denoland/deno/tree/v1.9.0)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
 
@@ -30,9 +30,9 @@ imported directly from GitHub using raw content URLs.
 
 ```ts
 // Import from Deno's third party module registry
-import { spy, Spy } from "https://deno.land/x/mock@v0.9.4/mod.ts";
+import { spy, Spy } from "https://deno.land/x/mock@v0.9.5/mod.ts";
 // Import from GitHub
-import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/v0.9.4/mod.ts";
+import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/v0.9.5/mod.ts";
 ```
 
 If you do not need all of the sub-modules, you can choose to just import the
@@ -40,12 +40,12 @@ sub-modules you need.
 
 ```ts
 // Import from Deno's third party module registry
-import { Spy, spy } from "https://deno.land/x/mock@v0.9.4/spy.ts";
+import { Spy, spy } from "https://deno.land/x/mock@v0.9.5/spy.ts";
 // Import from GitHub
 import {
   Spy,
   spy,
-} from "https://raw.githubusercontent.com/udibo/mock/v0.9.4/spy.ts";
+} from "https://raw.githubusercontent.com/udibo/mock/v0.9.5/spy.ts";
 ```
 
 #### Sub-modules
@@ -69,7 +69,7 @@ If a Node.js package has the type "module" specified in its package.json file,
 the JavaScript bundle can be imported as a `.js` file.
 
 ```js
-import { Spy, spy } from "./mock_v0.9.4.js";
+import { Spy, spy } from "./mock_v0.9.5.js";
 ```
 
 The default type for Node.js packages is "commonjs". To import the bundle into a
@@ -77,7 +77,7 @@ commonjs package, the file extension of the JavaScript bundle must be changed
 from `.js` to `.mjs`.
 
 ```js
-import { Spy, spy } from "./mock_v0.9.4.mjs";
+import { Spy, spy } from "./mock_v0.9.5.mjs";
 ```
 
 See [Node.js Documentation](https://nodejs.org/api/esm.html) for more
@@ -96,7 +96,7 @@ modules must have the type attribute set to "module".
 
 ```js
 // main.js
-import { Spy, spy } from "./mock_v0.9.4.js";
+import { Spy, spy } from "./mock_v0.9.5.js";
 ```
 
 You can also embed a module script directly into an HTML file by placing the
@@ -104,7 +104,7 @@ JavaScript code within the body of the script tag.
 
 ```html
 <script type="module">
-  import { spy, Spy } from "./mock_v0.9.4.js";
+  import { spy, Spy } from "./mock_v0.9.5.js";
 </script>
 ```
 
@@ -120,7 +120,7 @@ a try block then restore the function in a finally block to ensure the original
 instance method is restored before continuing to other tests. The same applies
 when using fake time.
 
-See [deno docs](https://doc.deno.land/https/deno.land/x/mock@v0.9.4/mod.ts) for
+See [deno docs](https://doc.deno.land/https/deno.land/x/mock@v0.9.5/mod.ts) for
 more information.
 
 ### Spy
@@ -135,8 +135,8 @@ anything, you can create an empty spy. An empty spy will just return undefined
 for any calls made to it.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@v0.9.4/spy.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Spy, spy } from "https://deno.land/x/mock@v0.9.5/spy.ts";
 
 function add(
   a: number,
@@ -164,8 +164,8 @@ If you have a function that takes a callback that needs to still behave
 normally, you can wrap it with a spy.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@v0.9.4/spy.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Spy, spy } from "https://deno.land/x/mock@v0.9.5/spy.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
   return values.filter(callback);
@@ -196,8 +196,8 @@ method. If it is not restored and you attempt to wrap it again, it will throw a
 spy error saying "already spying on function".
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@v0.9.4/spy.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Spy, spy } from "https://deno.land/x/mock@v0.9.5/spy.ts";
 
 class Database {
   private queries: any;
@@ -287,8 +287,8 @@ return values after initialization by replacing or adding to the `stub.returns`
 queue. When the returns queue is empty, it will return undefined.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@v0.9.4/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Stub, stub } from "https://deno.land/x/mock@v0.9.5/stub.ts";
 
 class Cat {
   action(name: string): any {
@@ -324,8 +324,8 @@ them returned. You can add more return values after initialization by replacing
 or adding to the `stub.returns` queue.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@v0.9.4/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Stub, stub } from "https://deno.land/x/mock@v0.9.5/stub.ts";
 
 class Database {
   query(query: string, params: any[]): any[][] {
@@ -400,8 +400,8 @@ initialization by replacing or adding to the `stub.returns` queue. When the
 returns queue is empty, it will call the replacement function.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@v0.9.4/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Stub, stub } from "https://deno.land/x/mock@v0.9.5/stub.ts";
 
 class Database {
   query(query: string, params: any[]): any[][] {
@@ -476,9 +476,9 @@ Overrides the real Date object and timer functions with fake ones that can be
 controlled through the fake time instance.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.80.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@v0.9.4/spy.ts";
-import { FakeTime } from "https://deno.land/x/mock@v0.9.4/time.ts";
+import { assertEquals } from "https://deno.land/std@0.93.0/testing/asserts.ts";
+import { Spy, spy } from "https://deno.land/x/mock@v0.9.5/spy.ts";
+import { FakeTime } from "https://deno.land/x/mock@v0.9.5/time.ts";
 
 function secondInterval(cb: () => void): void {
   setInterval(cb, 1000);
