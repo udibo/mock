@@ -1,53 +1,84 @@
-import {
-  assertEquals,
-  assertNotEquals,
-  assertThrows,
-} from "./deps/std/testing/asserts.ts";
-import { SpyCall, SpyError, Stub, stub } from "./stub.ts";
+import { assertSpyCall, assertSpyCalls } from "./asserts.ts";
+import { assertEquals, assertNotEquals, assertThrows } from "./deps.ts";
+import { SpyError, Stub, stub } from "./stub.ts";
 import { Point } from "./test_shared.ts";
 
 Deno.test("stub default", () => {
   const point = new Point(2, 3);
   const func: Stub<Point> = stub(point, "action");
-  const action: Stub<void> = func as unknown as Stub<void>;
-  const expectedCalls: SpyCall[] = [];
-  try {
-    assertEquals(func.calls, expectedCalls);
 
-    assertEquals(action(), undefined);
-    expectedCalls.push({ args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), undefined);
-    expectedCalls.push({ self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 0);
 
-    func.returns = [null, 0];
-    assertEquals(action(), null);
-    expectedCalls.push({ returned: null, args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), 0);
-    expectedCalls.push({ returned: 0, self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), undefined);
-    expectedCalls.push({ self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(func(), undefined);
+  assertSpyCall(func, 0, {
+    self: undefined,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 1);
 
-    func.returns = ["y", "z"];
-    assertEquals(action("x"), "y");
-    expectedCalls.push({ returned: "y", args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action("x"), "z");
-    expectedCalls.push({ self: point, returned: "z", args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action("x"), undefined);
-    expectedCalls.push({ self: point, args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(point.action(), undefined);
+  assertSpyCall(func, 1, {
+    self: point,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 2);
 
-    assertNotEquals(func, Point.prototype.action);
-    assertEquals(point.action, func);
-  } finally {
-    func.restore();
-  }
+  func.returns = [null, 0];
+  assertEquals(func(), null);
+  assertSpyCall(func, 2, {
+    self: undefined,
+    args: [],
+    returned: null,
+  });
+  assertSpyCalls(func, 3);
+
+  assertEquals(point.action(), 0);
+  assertSpyCall(func, 3, {
+    self: point,
+    args: [],
+    returned: 0,
+  });
+  assertSpyCalls(func, 4);
+
+  assertEquals(point.action(), undefined);
+  assertSpyCall(func, 4, {
+    self: point,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 5);
+
+  func.returns = ["y", "z"];
+  assertEquals(func("x"), "y");
+  assertSpyCall(func, 5, {
+    self: undefined,
+    args: ["x"],
+    returned: "y",
+  });
+  assertSpyCalls(func, 6);
+
+  assertEquals(point.action("x"), "z");
+  assertSpyCall(func, 6, {
+    self: point,
+    args: ["x"],
+    returned: "z",
+  });
+  assertSpyCalls(func, 7);
+
+  assertEquals(point.action("x"), undefined);
+  assertSpyCall(func, 7, {
+    self: point,
+    args: ["x"],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 8);
+
+  assertNotEquals(func, Point.prototype.action);
+  assertEquals(point.action, func);
+
+  func.restore();
   assertEquals(point.action, Point.prototype.action);
   assertThrows(
     () => func.restore(),
@@ -59,27 +90,37 @@ Deno.test("stub default", () => {
 Deno.test("stub returns", () => {
   const point = new Point(2, 3);
   const func: Stub<Point> = stub(point, "action", [5, "x"]);
-  const action: Stub<void> = func as unknown as Stub<void>;
-  const expectedCalls: SpyCall[] = [];
-  try {
-    assertEquals(func.calls, expectedCalls);
 
-    assertEquals(action(), 5);
-    expectedCalls.push({ returned: 5, args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), "x");
-    expectedCalls.push({ self: point, returned: "x", args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 0);
 
-    assertThrows(() => action(), SpyError, "no return for call");
-    expectedCalls.push({ error: new SpyError("no return for call"), args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(func(), 5);
+  assertSpyCall(func, 0, {
+    self: undefined,
+    args: [],
+    returned: 5,
+  });
+  assertSpyCalls(func, 1);
 
-    assertNotEquals(func, Point.prototype.action);
-    assertEquals(point.action, func);
-  } finally {
-    func.restore();
-  }
+  assertEquals(point.action(), "x");
+  assertSpyCall(func, 1, {
+    self: point,
+    args: [],
+    returned: "x",
+  });
+  assertSpyCalls(func, 2);
+
+  assertThrows(() => func(), SpyError, "no return for call");
+  assertSpyCall(func, 2, {
+    self: undefined,
+    args: [],
+    error: { Class: SpyError, msg: "no return for call" },
+  });
+  assertSpyCalls(func, 3);
+
+  assertNotEquals(func, Point.prototype.action);
+  assertEquals(point.action, func);
+
+  func.restore();
   assertEquals(point.action, Point.prototype.action);
   assertThrows(
     () => func.restore(),
@@ -90,48 +131,81 @@ Deno.test("stub returns", () => {
 
 Deno.test("stub function", () => {
   const point = new Point(2, 3);
-  // deno-lint-ignore no-explicit-any
-  const returns: any[] = [1, "b", 2, "d"];
+  const returns = [1, "b", 2, "d"];
   const func: Stub<Point> = stub(point, "action", () => returns.shift());
-  const action: Stub<void> = func as unknown as Stub<void>;
-  const expectedCalls: SpyCall[] = [];
-  try {
-    assertEquals(func.calls, expectedCalls);
 
-    assertEquals(action(), 1);
-    expectedCalls.push({ returned: 1, args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), "b");
-    expectedCalls.push({ returned: "b", self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 0);
 
-    func.returns = [null, 0];
-    assertEquals(action(), null);
-    expectedCalls.push({ returned: null, args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), 0);
-    expectedCalls.push({ returned: 0, self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), 2);
-    expectedCalls.push({ returned: 2, self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(func(), 1);
+  assertSpyCall(func, 0, {
+    self: undefined,
+    args: [],
+    returned: 1,
+  });
+  assertSpyCalls(func, 1);
 
-    func.returns = ["y", "z"];
-    assertEquals(action("x"), "y");
-    expectedCalls.push({ returned: "y", args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action("x"), "z");
-    expectedCalls.push({ self: point, returned: "z", args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action("x"), "d");
-    expectedCalls.push({ returned: "d", self: point, args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(point.action(), "b");
+  assertSpyCall(func, 1, {
+    self: point,
+    args: [],
+    returned: "b",
+  });
+  assertSpyCalls(func, 2);
 
-    assertNotEquals(func, Point.prototype.action);
-    assertEquals(point.action, func);
-  } finally {
-    func.restore();
-  }
+  func.returns = [null, 0];
+  assertEquals(func(), null);
+  assertSpyCall(func, 2, {
+    self: undefined,
+    args: [],
+    returned: null,
+  });
+  assertSpyCalls(func, 3);
+
+  assertEquals(point.action(), 0);
+  assertSpyCall(func, 3, {
+    self: point,
+    args: [],
+    returned: 0,
+  });
+  assertSpyCalls(func, 4);
+
+  assertEquals(point.action(), 2);
+  assertSpyCall(func, 4, {
+    self: point,
+    args: [],
+    returned: 2,
+  });
+  assertSpyCalls(func, 5);
+
+  func.returns = ["y", "z"];
+  assertEquals(func("x"), "y");
+  assertSpyCall(func, 5, {
+    self: undefined,
+    args: ["x"],
+    returned: "y",
+  });
+  assertSpyCalls(func, 6);
+
+  assertEquals(point.action("x"), "z");
+  assertSpyCall(func, 6, {
+    self: point,
+    args: ["x"],
+    returned: "z",
+  });
+  assertSpyCalls(func, 7);
+
+  assertEquals(point.action("y"), "d");
+  assertSpyCall(func, 7, {
+    self: point,
+    args: ["y"],
+    returned: "d",
+  });
+  assertSpyCalls(func, 8);
+
+  assertNotEquals(func, Point.prototype.action);
+  assertEquals(point.action, func);
+
+  func.restore();
   assertEquals(point.action, Point.prototype.action);
   assertThrows(
     () => func.restore(),

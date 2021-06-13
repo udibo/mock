@@ -1,6 +1,6 @@
 /** This module is browser compatible. */
 
-import { applyInstanceMixins } from "./deps/udibo/mixins/apply.ts";
+import { applyInstanceMixins } from "./deps.ts";
 
 /** An error related to spying on a function or instance method. */
 export class SpyError extends Error {
@@ -10,7 +10,7 @@ export class SpyError extends Error {
   }
 }
 
-/** An object containing call information recorded by a spy. */
+/** Call information recorded by a spy. */
 export interface SpyCall {
   /** Arguments passed to a function when called. */
   // deno-lint-ignore no-explicit-any
@@ -18,12 +18,12 @@ export interface SpyCall {
   /** The instance that a method was called on. */
   // deno-lint-ignore no-explicit-any
   self?: any;
-  /** The error value that was thrown by a function. */
-  // deno-lint-ignore no-explicit-any
-  error?: any;
   /** The value that was returned by a function. */
   // deno-lint-ignore no-explicit-any
   returned?: any;
+  /** The error value that was thrown by a function. */
+  // deno-lint-ignore no-explicit-any
+  error?: any;
 }
 
 // deno-lint-ignore no-explicit-any
@@ -106,12 +106,12 @@ function spy<T>(
           throw new SpyError("not a function");
         }
       }
+      call.returned = returned;
     } catch (error) {
       call.error = error;
       calls.push(call);
       throw error;
     }
-    if (typeof returned !== "undefined") call.returned = returned;
     calls.push(call);
     return returned;
   } as AnySpy<T>;

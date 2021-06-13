@@ -1,10 +1,12 @@
 /** This module is browser compatible. */
 
-import { applyMixins } from "./deps/udibo/mixins/apply.ts";
-import { Vector } from "./deps/udibo/collections/vector.ts";
-import { RBTree } from "./deps/udibo/collections/trees/rb_tree.ts";
-import { ascend } from "./deps/udibo/collections/comparators.ts";
-import { delay as delayNative } from "./deps/std/async/delay.ts";
+import {
+  applyMixins,
+  ascend,
+  delay as delayNative,
+  RBTree,
+  Vector,
+} from "./deps.ts";
 
 export type NativeDate = Date;
 export type NativeDateConstructor = DateConstructor;

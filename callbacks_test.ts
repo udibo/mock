@@ -1,8 +1,4 @@
-import {
-  assertEquals,
-  assertThrows,
-  assertThrowsAsync,
-} from "./deps/std/testing/asserts.ts";
+import { assertEquals, assertThrows, assertThrowsAsync } from "./deps.ts";
 import {
   rejects,
   resolves,

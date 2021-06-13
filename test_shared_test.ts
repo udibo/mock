@@ -1,4 +1,4 @@
-import { assertEquals } from "./deps/std/testing/asserts.ts";
+import { assertEquals } from "./deps.ts";
 import { Point, stringifyPoint } from "./test_shared.ts";
 
 Deno.test("test_shared Point", () => {

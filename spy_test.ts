@@ -1,37 +1,57 @@
+import { assertSpyCall, assertSpyCalls } from "./asserts.ts";
 import {
   assertEquals,
   assertNotEquals,
   assertStrictEquals,
   assertThrows,
-} from "./deps/std/testing/asserts.ts";
-import { Spy, spy, SpyCall, SpyError } from "./spy.ts";
+} from "./deps.ts";
+import { Spy, spy, SpyError } from "./spy.ts";
 import { Point, stringifyPoint } from "./test_shared.ts";
 
 Deno.test("spy default", () => {
   const func: Spy<void> = spy();
-  const expectedCalls: SpyCall[] = [];
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 0);
 
   assertEquals(func(), undefined);
-  expectedCalls.push({ args: [] });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 0, {
+    self: undefined,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 1);
 
   assertEquals(func("x"), undefined);
-  expectedCalls.push({ args: ["x"] });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 1, {
+    self: undefined,
+    args: ["x"],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 2);
 
   assertEquals(func({ x: 3 }), undefined);
-  expectedCalls.push({ args: [{ x: 3 }] });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 2, {
+    self: undefined,
+    args: [{ x: 3 }],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 3);
 
   assertEquals(func(3, 5, 7), undefined);
-  expectedCalls.push({ args: [3, 5, 7] });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 3, {
+    self: undefined,
+    args: [3, 5, 7],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 4);
 
   const point: Point = new Point(2, 3);
   assertEquals(func(Point, stringifyPoint, point), undefined);
-  expectedCalls.push({ args: [Point, stringifyPoint, { x: 2, y: 3 }] });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 4, {
+    self: undefined,
+    args: [Point, stringifyPoint, { x: 2, y: 3 }],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 5);
 
   assertThrows(
     () => func.restore(),
@@ -41,34 +61,49 @@ Deno.test("spy default", () => {
 });
 
 Deno.test("spy function", () => {
-  // deno-lint-ignore no-explicit-any
-  const func: Spy<void> = spy((value: any) => value);
-  const expectedCalls: SpyCall[] = [];
-  assertEquals(func.calls, expectedCalls);
+  const func: Spy<void> = spy((value) => value);
+  assertSpyCalls(func, 0);
 
   assertEquals(func(), undefined);
-  expectedCalls.push({ args: [] });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 0, {
+    self: undefined,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 1);
 
   assertEquals(func("x"), "x");
-  expectedCalls.push({ args: ["x"], returned: "x" });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 1, {
+    self: undefined,
+    args: ["x"],
+    returned: "x",
+  });
+  assertSpyCalls(func, 2);
 
   assertEquals(func({ x: 3 }), { x: 3 });
-  expectedCalls.push({ args: [{ x: 3 }], returned: { x: 3 } });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 2, {
+    self: undefined,
+    args: [{ x: 3 }],
+    returned: { x: 3 },
+  });
+  assertSpyCalls(func, 3);
 
   assertEquals(func(3, 5, 7), 3);
-  expectedCalls.push({ args: [3, 5, 7], returned: 3 });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCall(func, 3, {
+    self: undefined,
+    args: [3, 5, 7],
+    returned: 3,
+  });
+  assertSpyCalls(func, 4);
 
   const point: Point = new Point(2, 3);
   assertEquals(func(Point, stringifyPoint, point), Point);
-  expectedCalls.push({
+  assertSpyCall(func, 4, {
+    self: undefined,
     args: [Point, stringifyPoint, { x: 2, y: 3 }],
     returned: Point,
   });
-  assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 5);
 
   assertThrows(
     () => func.restore(),
@@ -80,58 +115,88 @@ Deno.test("spy function", () => {
 Deno.test("spy instance method", () => {
   const point = new Point(2, 3);
   const func: Spy<Point> = spy(point, "action");
-  const action: Spy<void> = func as unknown as Spy<void>;
-  const expectedCalls: SpyCall[] = [];
-  try {
-    assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 0);
 
-    assertEquals(action(), undefined);
-    expectedCalls.push({ args: [] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(), undefined);
-    expectedCalls.push({ self: point, args: [] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(func(), undefined);
+  assertSpyCall(func, 0, {
+    self: undefined,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 1);
 
-    assertEquals(action("x"), "x");
-    expectedCalls.push({ returned: "x", args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action("x"), "x");
-    expectedCalls.push({ self: point, returned: "x", args: ["x"] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(point.action(), undefined);
+  assertSpyCall(func, 1, { self: point, args: [] });
+  assertSpyCalls(func, 2);
 
-    assertEquals(action({ x: 3 }), { x: 3 });
-    expectedCalls.push({ returned: { x: 3 }, args: [{ x: 3 }] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action({ x: 3 }), { x: 3 });
-    expectedCalls.push({ self: point, returned: { x: 3 }, args: [{ x: 3 }] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(func("x"), "x");
+  assertSpyCall(func, 2, {
+    self: undefined,
+    args: ["x"],
+    returned: "x",
+  });
+  assertSpyCalls(func, 3);
 
-    assertEquals(action(3, 5, 7), 3);
-    expectedCalls.push({ returned: 3, args: [3, 5, 7] });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(3, 5, 7), 3);
-    expectedCalls.push({ self: point, returned: 3, args: [3, 5, 7] });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(point.action("x"), "x");
+  assertSpyCall(func, 3, {
+    self: point,
+    args: ["x"],
+    returned: "x",
+  });
+  assertSpyCalls(func, 4);
 
-    assertEquals(action(Point, stringifyPoint, point), Point);
-    expectedCalls.push({
-      returned: Point,
-      args: [Point, stringifyPoint, point],
-    });
-    assertEquals(func.calls, expectedCalls);
-    assertEquals(point.action(Point, stringifyPoint, point), Point);
-    expectedCalls.push({
-      self: point,
-      returned: Point,
-      args: [Point, stringifyPoint, point],
-    });
-    assertEquals(func.calls, expectedCalls);
+  assertEquals(func({ x: 3 }), { x: 3 });
+  assertSpyCall(func, 4, {
+    self: undefined,
+    args: [{ x: 3 }],
+    returned: { x: 3 },
+  });
+  assertSpyCalls(func, 5);
 
-    assertNotEquals(func, Point.prototype.action);
-    assertEquals(point.action, func);
-  } finally {
-    func.restore();
-  }
+  assertEquals(point.action({ x: 3 }), { x: 3 });
+  assertSpyCall(func, 5, {
+    self: point,
+    args: [{ x: 3 }],
+    returned: { x: 3 },
+  });
+  assertSpyCalls(func, 6);
+
+  assertEquals(func(3, 5, 7), 3);
+  assertSpyCall(func, 6, {
+    self: undefined,
+    args: [3, 5, 7],
+    returned: 3,
+  });
+  assertSpyCalls(func, 7);
+
+  assertEquals(point.action(3, 5, 7), 3);
+  assertSpyCall(func, 7, {
+    self: point,
+    args: [3, 5, 7],
+    returned: 3,
+  });
+  assertSpyCalls(func, 8);
+
+  assertEquals(func(Point, stringifyPoint, point), Point);
+  assertSpyCall(func, 8, {
+    self: undefined,
+    args: [Point, stringifyPoint, point],
+    returned: Point,
+  });
+  assertSpyCalls(func, 9);
+
+  assertEquals(point.action(Point, stringifyPoint, point), Point);
+  assertSpyCall(func, 9, {
+    self: point,
+    args: [Point, stringifyPoint, point],
+    returned: Point,
+  });
+  assertSpyCalls(func, 10);
+
+  assertNotEquals(func, Point.prototype.action);
+  assertEquals(point.action, func);
+
+  func.restore();
   assertEquals(point.action, Point.prototype.action);
   assertThrows(
     () => func.restore(),
@@ -148,28 +213,30 @@ Deno.test("spy instance method", () => {
 Deno.test("spy instance method symbol", () => {
   const point = new Point(2, 3);
   const func: Spy<Point> = spy(point, Symbol.iterator);
-  const expectedCalls: SpyCall[] = [];
-  try {
-    assertEquals(func.calls, expectedCalls);
+  assertSpyCalls(func, 0);
 
-    const values: number[] = [];
-    for (const value of point) {
-      values.push(value);
-    }
-    expectedCalls.push({ self: point, args: [] });
-    assertEquals(values, [2, 3]);
-    assertEquals([...point], [2, 3]);
-    expectedCalls.push({ self: point, args: [] });
-    assertEquals(
-      func.calls.map((call) => ({ self: call.self, args: call.args })),
-      expectedCalls,
-    );
-
-    assertNotEquals(func, Point.prototype[Symbol.iterator]);
-    assertEquals(point[Symbol.iterator], func);
-  } finally {
-    func.restore();
+  const values: number[] = [];
+  for (const value of point) {
+    values.push(value);
   }
+  assertSpyCall(func, 0, {
+    self: point,
+    args: [],
+  });
+  assertSpyCalls(func, 1);
+
+  assertEquals(values, [2, 3]);
+  assertEquals([...point], [2, 3]);
+  assertSpyCall(func, 1, {
+    self: point,
+    args: [],
+  });
+  assertSpyCalls(func, 2);
+
+  assertNotEquals(func, Point.prototype[Symbol.iterator]);
+  assertEquals(point[Symbol.iterator], func);
+
+  func.restore();
   assertEquals(point[Symbol.iterator], Point.prototype[Symbol.iterator]);
   assertThrows(
     () => func.restore(),
@@ -191,29 +258,44 @@ Deno.test("spy instance method property descriptor", () => {
   };
   Object.defineProperty(point, "action", actionDescriptor);
   const action: Spy<Point> = spy(point, "action");
-  const expectedCalls: SpyCall[] = [];
-  try {
-    assertEquals(action.calls, expectedCalls);
+  assertSpyCalls(action, 0);
 
-    assertEquals(action(), undefined);
-    expectedCalls.push({ args: [] });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(point.action(), undefined);
-    expectedCalls.push({ self: point, args: [] });
-    assertEquals(action.calls, expectedCalls);
+  assertEquals(action(), undefined);
+  assertSpyCall(action, 0, {
+    self: undefined,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(action, 1);
 
-    assertEquals(action("x", "y"), "y");
-    expectedCalls.push({ returned: "y", args: ["x", "y"] });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(point.action("x", "y"), "y");
-    expectedCalls.push({ self: point, returned: "y", args: ["x", "y"] });
-    assertEquals(action.calls, expectedCalls);
+  assertEquals(point.action(), undefined);
+  assertSpyCall(action, 1, {
+    self: point,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(action, 2);
 
-    assertNotEquals(action, actionDescriptor.value);
-    assertEquals(point.action, action);
-  } finally {
-    action.restore();
-  }
+  assertEquals(action("x", "y"), "y");
+  assertSpyCall(action, 2, {
+    self: undefined,
+    args: ["x", "y"],
+    returned: "y",
+  });
+  assertSpyCalls(action, 3);
+
+  assertEquals(point.action("x", "y"), "y");
+  assertSpyCall(action, 3, {
+    self: point,
+    args: ["x", "y"],
+    returned: "y",
+  });
+  assertSpyCalls(action, 4);
+
+  assertNotEquals(action, actionDescriptor.value);
+  assertEquals(point.action, action);
+
+  action.restore();
   assertEquals(point.action, actionDescriptor.value);
   assertEquals(
     Object.getOwnPropertyDescriptor(point, "action"),
@@ -229,54 +311,52 @@ Deno.test("spy instance method property descriptor", () => {
 Deno.test("spy instance method property getter/setter", () => {
   const point = new Point(2, 3);
   const action: Spy<Point> = spy(point, "action");
-  const getter: Spy<Point> = action.get as Spy<Point>;
-  const setter: Spy<Point> = action.set as Spy<Point>;
+  const getter: Spy<Point> = action.get!;
+  const setter: Spy<Point> = action.set!;
 
-  const expectedCalls: SpyCall[] = [];
-  const expectedGetterCalls: SpyCall[] = [];
-  const expectedSetterCalls: SpyCall[] = [];
-  try {
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
+  assertSpyCalls(action, 0);
+  assertSpyCalls(getter, 0);
+  assertSpyCalls(setter, 0);
 
-    assertStrictEquals(point.action, action);
-    expectedGetterCalls.push({ self: point, args: [], returned: action });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
+  assertStrictEquals(point.action, action);
+  assertSpyCall(getter, 0, {
+    self: point,
+    args: [],
+    returned: action,
+  });
+  assertSpyCalls(action, 0);
+  assertSpyCalls(getter, 1);
+  assertSpyCalls(setter, 0);
 
-    assertEquals(point.action(1, 2), 1);
-    expectedCalls.push({ self: point, args: [1, 2], returned: 1 });
-    expectedGetterCalls.push({ self: point, args: [], returned: action });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
+  assertEquals(point.action(1, 2), 1);
+  assertSpyCall(action, 0, { self: point, args: [1, 2], returned: 1 });
+  assertSpyCall(getter, 1, { self: point, args: [], returned: action });
+  assertSpyCalls(action, 1);
+  assertSpyCalls(getter, 2);
+  assertSpyCalls(setter, 0);
 
-    // deno-lint-ignore no-explicit-any
-    const replacement: (...args: any[]) => any = (...args: any[]) => args[1];
-    assertStrictEquals(point.action = replacement, replacement);
-    expectedSetterCalls.push({ self: point, args: [replacement] });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
+  const replacement = () => 3;
+  assertStrictEquals(point.action = replacement, replacement);
+  assertSpyCall(setter, 0, { self: point, args: [replacement] });
+  assertSpyCalls(action, 1);
+  assertSpyCalls(getter, 2);
+  assertSpyCalls(setter, 1);
 
-    assertStrictEquals(point.action, replacement);
-    expectedGetterCalls.push({ self: point, args: [], returned: replacement });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
+  assertStrictEquals(point.action, replacement);
+  assertSpyCall(getter, 2, { self: point, args: [], returned: replacement });
+  assertSpyCalls(action, 1);
+  assertSpyCalls(getter, 3);
+  assertSpyCalls(setter, 1);
 
-    assertEquals(point.action(1, 2), 2);
-    expectedGetterCalls.push({ self: point, args: [], returned: replacement });
-    assertEquals(action.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-  } finally {
-    action.restore();
-  }
+  assertEquals(point.action(1, 2), 3);
+  assertSpyCall(getter, 3, { self: point, args: [], returned: replacement });
+  assertSpyCalls(action, 1);
+  assertSpyCalls(getter, 4);
+  assertSpyCalls(setter, 1);
+
+  action.restore();
   assertStrictEquals(point.action, Point.prototype.action);
-  assertEquals(getter.calls, expectedGetterCalls);
+  assertSpyCalls(getter, 4);
   assertThrows(
     () => action.restore(),
     SpyError,
@@ -290,61 +370,42 @@ Deno.test("spy instance property getter/setter", () => {
   const getter: Spy<Point> = x.get as Spy<Point>;
   const setter: Spy<Point> = x.set as Spy<Point>;
 
-  const expectedCalls: SpyCall[] = [];
-  const expectedGetterCalls: SpyCall[] = [];
-  const expectedSetterCalls: SpyCall[] = [];
-  try {
-    assertEquals(x.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
+  assertSpyCalls(x, 0);
+  assertSpyCalls(getter, 0);
+  assertSpyCalls(setter, 0);
 
-    assertStrictEquals(point.x, 2);
-    expectedGetterCalls.push({ self: point, args: [], returned: 2 });
-    assertEquals(x.calls, expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-
-    assertThrows(() => x(1, 2), SpyError, "not a function");
-    expectedGetterCalls.push({ args: [], returned: 2 });
-    assertEquals(Object.keys(x.calls[0]).sort(), ["args", "error"]);
-    assertEquals(x.calls[0]?.args, [1, 2]);
-    assertEquals(x.calls[0]?.error?.name, "SpyError");
-    assertEquals(x.calls[0]?.error?.message, "not a function");
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-
-    // deno-lint-ignore no-explicit-any
-    const replacement: (...args: any[]) => any = (...args: any[]) => args[1];
-    assertStrictEquals(point.x = replacement as unknown as number, replacement);
-    expectedSetterCalls.push({ self: point, args: [replacement] });
-    assertEquals(x.calls.slice(1), expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-
-    assertStrictEquals(point.x, replacement);
-    expectedGetterCalls.push({ self: point, args: [], returned: replacement });
-    assertEquals(x.calls.slice(1), expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-
-    // deno-lint-ignore no-explicit-any
-    assertEquals((point.x as unknown as (...args: any[]) => any)(1, 2), 2);
-    expectedGetterCalls.push({ self: point, args: [], returned: replacement });
-    assertEquals(x.calls.slice(1), expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-
-    assertEquals(x(1, 2), 2);
-    expectedCalls.push({ args: [1, 2], returned: 2 });
-    expectedGetterCalls.push({ args: [], returned: replacement });
-    assertEquals(x.calls.slice(1), expectedCalls);
-    assertEquals(getter.calls, expectedGetterCalls);
-    assertEquals(setter.calls, expectedSetterCalls);
-  } finally {
-    x.restore();
-  }
   assertStrictEquals(point.x, 2);
-  assertEquals(getter.calls, expectedGetterCalls);
+  assertSpyCall(getter, 0, { self: point, args: [], returned: 2 });
+  assertSpyCalls(x, 0);
+  assertSpyCalls(getter, 1);
+  assertSpyCalls(setter, 0);
+
+  assertThrows(() => x(1, 2), SpyError, "not a function");
+  assertSpyCall(getter, 1, { self: undefined, args: [], returned: 2 });
+  assertSpyCall(x, 0, {
+    self: undefined,
+    args: [1, 2],
+    error: { Class: SpyError, msg: "not a function" },
+  });
+  assertSpyCalls(x, 1);
+  assertSpyCalls(getter, 2);
+  assertSpyCalls(setter, 0);
+
+  assertStrictEquals(point.x = 4, 4);
+  assertSpyCall(setter, 0, { self: point, args: [4], returned: undefined });
+  assertSpyCalls(x, 1);
+  assertSpyCalls(getter, 2);
+  assertSpyCalls(setter, 1);
+
+  assertStrictEquals(point.x, 4);
+  assertSpyCall(getter, 2, { self: point, args: [], returned: 4 });
+  assertSpyCalls(x, 1);
+  assertSpyCalls(getter, 3);
+  assertSpyCalls(setter, 1);
+
+  x.restore();
+  assertStrictEquals(point.x, 2);
+  assertSpyCalls(getter, 3);
   assertThrows(
     () => x.restore(),
     SpyError,

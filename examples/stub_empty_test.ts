@@ -1,4 +1,4 @@
-import { assertEquals } from "../deps/std/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
 import { Stub, stub } from "../stub.ts";
 
 class Cat {

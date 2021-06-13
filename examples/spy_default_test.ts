@@ -1,4 +1,5 @@
-import { assertEquals } from "../deps/std/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
+import { assertSpyCall } from "../asserts.ts";
 import { Spy, spy } from "../spy.ts";
 
 function add(
@@ -15,9 +16,7 @@ Deno.test("calls fake callback", () => {
   const callback: Spy<void> = spy();
 
   assertEquals(add(2, 3, callback), undefined);
+  assertSpyCall(callback, 0, { args: [undefined, 5] });
   assertEquals(add(5, 4, callback), undefined);
-  assertEquals(callback.calls, [
-    { args: [undefined, 5] },
-    { args: [undefined, 9] },
-  ]);
+  assertSpyCall(callback, 1, { args: [undefined, 9] });
 });

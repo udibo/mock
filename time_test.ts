@@ -3,7 +3,7 @@ import {
   assertEquals,
   assertNotEquals,
   assertStrictEquals,
-} from "./deps/std/testing/asserts.ts";
+} from "./deps.ts";
 import { delay, FakeDate, FakeTime, NativeDate } from "./time.ts";
 import { Spy, spy, SpyCall } from "./spy.ts";
 import { assertPassthrough } from "./asserts.ts";
