@@ -48,7 +48,7 @@ Deno.test("spy default", () => {
   assertEquals(func(Point, stringifyPoint, point), undefined);
   assertSpyCall(func, 4, {
     self: undefined,
-    args: [Point, stringifyPoint, { x: 2, y: 3 }],
+    args: [Point, stringifyPoint, point],
     returned: undefined,
   });
   assertSpyCalls(func, 5);
@@ -100,7 +100,7 @@ Deno.test("spy function", () => {
   assertEquals(func(Point, stringifyPoint, point), Point);
   assertSpyCall(func, 4, {
     self: undefined,
-    args: [Point, stringifyPoint, { x: 2, y: 3 }],
+    args: [Point, stringifyPoint, point],
     returned: Point,
   });
   assertSpyCalls(func, 5);

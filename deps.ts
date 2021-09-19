@@ -1,4 +1,4 @@
-export { delay } from "https://deno.land/std@0.98.0/async/delay.ts";
+export { delay } from "https://deno.land/std@0.107.0/async/delay.ts";
 
 export {
   assert,
@@ -8,13 +8,13 @@ export {
   assertStrictEquals,
   assertThrows,
   assertThrowsAsync,
-} from "https://deno.land/std@0.98.0/testing/asserts.ts";
+} from "https://deno.land/std@0.107.0/testing/asserts.ts";
 
-export { RBTree } from "https://deno.land/x/collections@v0.11.1/trees/rb_tree.ts";
-export { ascend } from "https://deno.land/x/collections@v0.11.1/comparators.ts";
-export { Vector } from "https://deno.land/x/collections@v0.11.1/vector.ts";
+export { RBTree } from "https://deno.land/x/collections@0.11.2/trees/rb_tree.ts";
+export { ascend } from "https://deno.land/x/collections@0.11.2/comparators.ts";
+export { Vector } from "https://deno.land/x/collections@0.11.2/vector.ts";
 
 export {
   applyInstanceMixins,
   applyMixins,
-} from "https://deno.land/x/mixins@v0.7.3/apply.ts";
+} from "https://deno.land/x/mixins@0.7.4/apply.ts";
