@@ -7,7 +7,11 @@ import {
 import { delay, FakeDate, FakeTime, NativeDate } from "./time.ts";
 import { Spy, spy, SpyCall } from "./spy.ts";
 import { assertPassthrough } from "./asserts.ts";
-import { fromNow } from "./callbacks.ts";
+
+function fromNow(): () => number {
+  const start: number = Date.now();
+  return () => Date.now() - start;
+}
 
 Deno.test("FakeDate parse and UTC behave the same", () => {
   assertEquals(

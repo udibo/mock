@@ -1,4 +1,4 @@
-import { AssertionError, assertThrows, assertThrowsAsync } from "./deps.ts";
+import { AssertionError, assertRejects, assertThrows } from "./deps.ts";
 import {
   assertPassthrough,
   assertSpyCall,
@@ -610,7 +610,7 @@ Deno.test("assertSpyCall error", () => {
 Deno.test("assertSpyCallAsync function", async () => {
   const spyFunc: Spy<void> = spy(() => Promise.resolve(5));
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
     "spy not called as much as expected",
@@ -638,7 +638,7 @@ Deno.test("assertSpyCallAsync function", async () => {
     returned: Promise.resolve(5),
   });
 
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         args: [1],
@@ -648,7 +648,7 @@ Deno.test("assertSpyCallAsync function", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         args: [1],
@@ -656,7 +656,7 @@ Deno.test("assertSpyCallAsync function", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         self: {},
@@ -664,7 +664,7 @@ Deno.test("assertSpyCallAsync function", async () => {
     AssertionError,
     "spy not called as method on expected self",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         returned: 2,
@@ -672,7 +672,7 @@ Deno.test("assertSpyCallAsync function", async () => {
     AssertionError,
     "spy call did not resolve to expected value",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         returned: Promise.resolve(2),
@@ -680,7 +680,7 @@ Deno.test("assertSpyCallAsync function", async () => {
     AssertionError,
     "spy call did not resolve to expected value",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
     "spy not called as much as expected",
@@ -695,7 +695,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     (x?: number) => Promise.resolve(x),
   );
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyMethod, 0),
     AssertionError,
     "spy not called as much as expected",
@@ -726,7 +726,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     returned: Promise.resolve(3),
   });
 
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 0, {
         args: [7, 4],
@@ -736,7 +736,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 0, {
         args: [7, 3],
@@ -744,7 +744,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 0, {
         self: undefined,
@@ -752,7 +752,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy not expected to be called as method on object",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 0, {
         returned: 7,
@@ -760,7 +760,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy call did not resolve to expected value",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 0, {
         returned: Promise.resolve(7),
@@ -768,7 +768,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy call did not resolve to expected value",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyMethod, 1),
     AssertionError,
     "spy not called as much as expected",
@@ -799,7 +799,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     returned: Promise.resolve(9),
   });
 
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
         args: [7, 4],
@@ -809,7 +809,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
         args: [7, 3],
@@ -817,7 +817,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
         self: point,
@@ -825,7 +825,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy not called as method on expected self",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
         returned: 7,
@@ -833,7 +833,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy call did not resolve to expected value",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
         returned: Promise.resolve(7),
@@ -841,7 +841,7 @@ Deno.test("assertSpyCallAsync method", async () => {
     AssertionError,
     "spy call did not resolve to expected value",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyMethod, 2),
     AssertionError,
     "spy not called as much as expected",
@@ -852,7 +852,7 @@ Deno.test("assertSpyCallAync on sync value", async () => {
   const spyFunc: Spy<void> = spy(() => 4);
 
   await spyFunc();
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
     "spy call did not return a promise, a value was returned.",
@@ -864,8 +864,8 @@ Deno.test("assertSpyCallAync on sync error", async () => {
     throw new ExampleError("failed");
   });
 
-  await assertThrowsAsync(() => spyFunc(), ExampleError, "fail");
-  await assertThrowsAsync(
+  await assertRejects(() => spyFunc(), ExampleError, "fail");
+  await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
     "spy call did not return a promise, an error was thrown.",
@@ -877,7 +877,7 @@ Deno.test("assertSpyCallAync error", async () => {
     Promise.reject(new ExampleError("failed"))
   );
 
-  await assertThrowsAsync(() => spyFunc(), ExampleError, "fail");
+  await assertRejects(() => spyFunc(), ExampleError, "fail");
   await assertSpyCallAsync(spyFunc, 0);
   await assertSpyCallAsync(spyFunc, 0, {
     args: [],
@@ -906,7 +906,7 @@ Deno.test("assertSpyCallAync error", async () => {
     },
   });
 
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         args: [1],
@@ -919,7 +919,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         args: [1],
@@ -927,7 +927,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     "spy not called with expected args",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         self: {},
@@ -935,7 +935,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     "spy not called as method on expected self",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         error: {
@@ -946,7 +946,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     'Expected error to be instance of "OtherError"',
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         error: {
@@ -957,7 +957,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     'Expected error to be instance of "OtherError"',
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         error: {
@@ -968,7 +968,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     'Expected error message to include "x", but got "failed".',
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         error: {
@@ -979,7 +979,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     'Expected error message to include "x", but got "failed".',
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         error: {
@@ -989,7 +989,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     'Expected error message to include "x", but got "failed".',
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         returned: 7,
@@ -997,7 +997,7 @@ Deno.test("assertSpyCallAync error", async () => {
     AssertionError,
     "spy call returned promise was rejected",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         returned: 7,
@@ -1006,7 +1006,7 @@ Deno.test("assertSpyCallAync error", async () => {
     TypeError,
     "do not expect error and return, only one should be expected",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
     "spy not called as much as expected",

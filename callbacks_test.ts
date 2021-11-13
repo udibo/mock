@@ -1,12 +1,5 @@
-import { assertEquals, assertThrows, assertThrowsAsync } from "./deps.ts";
-import {
-  rejects,
-  resolves,
-  returnsArg,
-  returnsArgs,
-  returnsThis,
-  throws,
-} from "./callbacks.ts";
+import { assertEquals } from "./deps.ts";
+import { returnsArg, returnsArgs, returnsThis } from "./callbacks.ts";
 
 Deno.test("returnsThis", () => {
   const callback = returnsThis();
@@ -44,41 +37,4 @@ Deno.test("returnsArgs", () => {
   assertEquals(callback("b", "c"), ["c"]);
   assertEquals(callback("d", "e", "f"), ["e", "f"]);
   assertEquals(callback("d", "e", "f", "g"), ["e", "f"]);
-});
-
-Deno.test("throws", () => {
-  let callback = throws(new Error("not found"));
-  assertThrows(
-    () => callback(),
-    Error,
-    "not found",
-  );
-  callback = throws(new Error("invalid"));
-  assertThrows(
-    () => callback(),
-    Error,
-    "invalid",
-  );
-});
-
-Deno.test("resolves", async () => {
-  let callback = resolves(2);
-  assertEquals(await callback(), 2);
-  callback = resolves(3);
-  assertEquals(await callback(), 3);
-});
-
-Deno.test("rejects", async () => {
-  let callback = rejects(new Error("not found"));
-  await assertThrowsAsync(
-    callback,
-    Error,
-    "not found",
-  );
-  callback = rejects(new Error("invalid"));
-  await assertThrowsAsync(
-    callback,
-    Error,
-    "invalid",
-  );
 });

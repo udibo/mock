@@ -8,7 +8,7 @@ function add(
   callback: (error: Error | void, value?: number) => void,
 ): void {
   const value: number = a + b;
-  if (typeof value === "number" && value !== NaN) callback(undefined, value);
+  if (typeof value === "number" && !isNaN(value)) callback(undefined, value);
   else callback(new Error("invalid input"));
 }
 
