@@ -26,29 +26,3 @@ export function returnsArgs(
     return Array.prototype.slice.call(arguments, start, end);
   };
 }
-
-/** Creates a function that throws a specific error. */
-// deno-lint-ignore no-explicit-any
-export function throws(error: any): (...args: any[]) => any {
-  return function () {
-    throw error;
-  };
-}
-
-/** Creates a function that returns a promise that will resolve a specific value. */
-// deno-lint-ignore no-explicit-any
-export function resolves(value: any): (...args: any[]) => Promise<any> {
-  return () => Promise.resolve(value);
-}
-
-/** Creates a function that returns a promise that will reject a specific error. */
-// deno-lint-ignore no-explicit-any
-export function rejects(error: any): (...args: any[]) => Promise<any> {
-  return () => Promise.reject(error);
-}
-
-/** Creates a function that returns the time difference between when it is called and when it was created. */
-export function fromNow(): () => number {
-  const start: number = Date.now();
-  return () => Date.now() - start;
-}

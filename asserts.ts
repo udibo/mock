@@ -3,9 +3,9 @@
 import {
   assertEquals,
   AssertionError,
+  assertIsError,
+  assertRejects,
   assertStrictEquals,
-  assertThrows,
-  assertThrowsAsync,
 } from "./deps.ts";
 import { Spy, SpyCall, Stub, stub } from "./stub.ts";
 
@@ -247,12 +247,10 @@ export function assertSpyCall(
           "spy call did not throw an error, a value was returned.",
         );
       }
-      assertThrows(
-        () => {
-          throw call.error;
-        },
+      assertIsError(
+        call.error,
         expected.error?.Class ?? Error,
-        expected.error?.msg ?? "",
+        expected.error?.msg,
       );
     }
   }
@@ -330,7 +328,7 @@ export async function assertSpyCallAsync(
     }
 
     if ("error" in expected) {
-      await assertThrowsAsync(
+      await assertRejects(
         () => call.returned,
         expected.error?.Class ?? Error,
         expected.error?.msg ?? "",
