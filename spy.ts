@@ -17,7 +17,8 @@ export interface SpyCall {
   /** The instance that a method was called on. */
   self?: unknown;
   /** The value that was returned by a function. */
-  returned?: unknown | Promise<unknown>;
+  // deno-lint-ignore no-explicit-any
+  returned?: any;
   /** The error value that was thrown by a function. */
   error?: Error;
 }
@@ -26,13 +27,6 @@ function isSpy<T>(func: unknown): func is Spy<T> {
   return typeof func === "function" &&
     Array.isArray((func as Spy<T>).calls);
 }
-
-/*
-async function f(fn: (...args: any[]) => Promise<unknown>) {
-  await fn();
-}
-f(() => null);
-*/
 
 export class SpyMixin<T> {
   // deno-lint-ignore no-explicit-any
