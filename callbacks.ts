@@ -10,7 +10,7 @@ export function returnsThis<T>(): (...args: any[]) => ThisType<T> {
 
 /** Creates a function that returns one of its arguments. */
 // deno-lint-ignore no-explicit-any
-export function returnsArg(idx: number): (...args: any[]) => any {
+export function returnsArg(idx: number): (...args: any[]) => unknown {
   return function () {
     return arguments[idx];
   };
@@ -21,7 +21,7 @@ export function returnsArgs(
   start = 0,
   end?: number,
   // deno-lint-ignore no-explicit-any
-): (...args: any[]) => any {
+): (...args: any[]) => unknown {
   return function () {
     return Array.prototype.slice.call(arguments, start, end);
   };
