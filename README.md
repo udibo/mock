@@ -281,9 +281,7 @@ handles the expected behavior correctly.
 
 If you have an instance method but you don't need it to do or return anything,
 you can create an empty stub. An empty stub will just return undefined for any
-calls made to it. If you need it to return specific values instead, you can add
-return values after initialization by replacing or adding to the `stub.returns`
-queue. When the returns queue is empty, it will return undefined.
+calls made to it.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
@@ -306,11 +304,6 @@ Deno.test("doAction", () => {
   try {
     assertEquals(doAction(cat, "walk"), undefined);
     assertEquals(doAction(cat, "jump"), undefined);
-
-    action.returns = ["hello", "world"];
-    assertEquals(doAction(cat, "say hello"), "hello");
-    assertEquals(doAction(cat, "say world"), "world");
-    assertEquals(doAction(cat, "say bye"), undefined);
   } finally {
     action.restore();
   }
@@ -318,9 +311,12 @@ Deno.test("doAction", () => {
 ```
 
 If you have an instance method but need it to return specific values for each
-call, you can create a stub with an array of values in the order that you want
-them returned. You can add more return values after initialization by replacing
-or adding to the `stub.returns` queue.
+call, you can create a stub with a function that returns those values. A
+callback helper is provided for converting an iterable into a callback for your
+stub function. You can add more return values after initialization by pushing
+onto the array as long as the iterator has not completed. An iterator is
+considered complete if called after all values have been returned. The callback
+will return undefined to each call after the iterator is done.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
@@ -348,16 +344,17 @@ function getUsers(
 
 Deno.test("getUsers", () => {
   const db: Database = new Database();
-  const query: Stub<Database> = stub(db, "query", [
+  const returns: [number, string][][] = [
     [[1, "jd"], [2, "johnd"], [3, "janedoe"]],
     [[2, "johnd"]],
-  ]);
+  ];
+  const query: Stub<Database> = stub(db, "query", returnsNext(returns));
 
   try {
     assertEquals(getUsers(db, "doe"), ["1 jd", "2 johnd", "3 janedoe"]);
     assertEquals(getUsers(db, "doe", "john"), ["2 johnd"]);
 
-    query.returns.push([[3, "janedoe"]]);
+    returns.push([[3, "janedoe"]]);
     assertEquals(getUsers(db, "doe"), ["3 janedoe"]);
 
     assertEquals(query.calls, [
@@ -393,10 +390,7 @@ Deno.test("getUsers", () => {
 ```
 
 If you have an instance method but need it to call a replacement function
-instead of the original, you can create a stub with a replacement function. If
-you need it to return specific values instead, you can add return values after
-initialization by replacing or adding to the `stub.returns` queue. When the
-returns queue is empty, it will call the replacement function.
+instead of the original, you can create a stub with a replacement function.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
@@ -434,7 +428,7 @@ Deno.test("getUsers", () => {
     assertEquals(getUsers(db, "doe"), ["1 jd", "2 johnd", "3 janedoe"]);
     assertEquals(getUsers(db, "doe", "john"), ["2 johnd"]);
 
-    query.returns.push([[3, "janedoe"]]);
+    returns.push([[3, "janedoe"]]);
     assertEquals(getUsers(db, "doe"), ["3 janedoe"]);
 
     assertEquals(query.calls, [

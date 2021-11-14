@@ -26,3 +26,25 @@ export function returnsArgs(
     return Array.prototype.slice.call(arguments, start, end);
   };
 }
+
+export function returnsNext<T>(
+  iterable: Iterable<T>,
+  // deno-lint-ignore no-explicit-any
+): (...args: any[]) => (T | void) {
+  const gen = (function* returnsValue() {
+    yield* iterable;
+  })();
+  return function () {
+    return gen.next().value;
+  };
+}
+
+export function resolvesNext<T>(
+  iterable: AsyncIterable<T>,
+  // deno-lint-ignore no-explicit-any
+): (...args: any[]) => Promise<T | void> {
+  const gen = (async function* returnsValue() {
+    yield* iterable;
+  })();
+  return async () => (await gen.next()).value;
+}

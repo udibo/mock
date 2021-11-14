@@ -34,7 +34,7 @@ Deno.test("getUsers", () => {
     assertEquals(getUsers(db, "doe"), ["1 jd", "2 johnd", "3 janedoe"]);
     assertEquals(getUsers(db, "doe", "john"), ["2 johnd"]);
 
-    query.returns.push([[3, "janedoe"]]);
+    returns.push([[3, "janedoe"]]);
     assertEquals(getUsers(db, "doe"), ["3 janedoe"]);
 
     assertEquals(query.calls, [
