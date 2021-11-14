@@ -312,7 +312,7 @@ export async function assertSpyCallAsync<T>(
 
     if ("error" in expected) {
       await assertRejects(
-        () => Promise.resolve(call.returned),
+        () => call.returned,
         expected.error?.Class ?? Error,
         expected.error?.msg ?? "",
       );
