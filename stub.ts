@@ -5,8 +5,7 @@ import { Spy, spy, SpyCall, SpyError, SpyMixin } from "./spy.ts";
 /** An instance method wrapper that overrides the original method and records all calls made to it. */
 export interface Stub<T> extends Spy<T> {
   /** A queue of values that the stub will return. */
-  // deno-lint-ignore no-explicit-any
-  returns: any[];
+  returns: unknown[];
 }
 
 /** Wraps an instance method with a Stub. */
@@ -14,29 +13,27 @@ function stub<T>(instance: T, method: string | number | symbol): Stub<T>;
 function stub<T>(
   instance: T,
   method: string | number | symbol,
-  // deno-lint-ignore no-explicit-any
-  returns: any[],
+  returns: unknown[],
 ): Stub<T>;
 function stub<T>(
   instance: T,
   method: string | number | symbol,
   // deno-lint-ignore no-explicit-any
-  func: (...args: any[]) => any,
+  func: (...args: any[]) => unknown,
 ): Stub<T>;
 function stub<T>(
   instance: T,
   method: string | number | symbol,
   // deno-lint-ignore no-explicit-any
-  arrOrFunc?: ((...args: any[]) => any) | any[],
+  arrOrFunc?: ((...args: any[]) => unknown) | unknown[],
 ): Stub<T> {
   const stub: Stub<T> = spy(instance, method) as Stub<T>;
   const stubInternal: SpyMixin<T> = stub as unknown as SpyMixin<T>;
   stub.returns = Array.isArray(arrOrFunc) ? arrOrFunc : [];
   // deno-lint-ignore no-explicit-any
-  const func: (...args: any[]) => any = typeof arrOrFunc === "function"
+  const func: (...args: any[]) => unknown = typeof arrOrFunc === "function"
     ? function (this: T) {
-      // deno-lint-ignore no-explicit-any
-      return arrOrFunc.apply(this, arguments as unknown as any[]);
+      return arrOrFunc.apply(this, arguments as unknown as unknown[]);
     }
     : typeof arrOrFunc === "undefined"
     ? () => undefined
@@ -45,8 +42,7 @@ function stub<T>(
     };
   stubInternal.func = function () {
     if (stub.returns.length === 0) {
-      // deno-lint-ignore no-explicit-any
-      return func.apply(this, arguments as unknown as any[]);
+      return func.apply(this, arguments as unknown as unknown[]);
     }
     return stub.returns.shift();
   };

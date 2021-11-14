@@ -13,30 +13,24 @@ export interface PassthroughTarget<T, U> {
   instance: U;
   method?: string | number | symbol;
   self?: ThisType<T> | ThisType<U>;
-  // deno-lint-ignore no-explicit-any
-  args?: any[];
-  // deno-lint-ignore no-explicit-any
-  returned?: any;
+  args?: unknown[];
+  returned?: unknown;
 }
 
 export interface PassthroughOptionsInstance<T, U> {
   instance: T;
   method: string | number | symbol;
   target: PassthroughTarget<T, U>;
-  // deno-lint-ignore no-explicit-any
-  args?: any[];
-  // deno-lint-ignore no-explicit-any
-  returned?: any;
+  args?: unknown[];
+  returned?: unknown;
 }
 
 export interface PassthroughOptionsFunc<T, U> {
   // deno-lint-ignore no-explicit-any
-  func: (...args: any[]) => any;
+  func: (...args: any[]) => unknown;
   target: PassthroughTarget<T, U>;
-  // deno-lint-ignore no-explicit-any
-  args?: any[];
-  // deno-lint-ignore no-explicit-any
-  returned?: any;
+  args?: unknown[];
+  returned?: unknown;
 }
 
 export type PassthroughOptions<T, U> =
@@ -47,16 +41,12 @@ export type PassthroughOptions<T, U> =
 export function assertPassthrough<T, U>(
   options: PassthroughOptions<T, U>,
 ): void {
-  // deno-lint-ignore no-explicit-any
-  const targetArgs: any[] = options.target.args ?? options.args ??
+  const targetArgs: unknown[] = options.target.args ?? options.args ??
     [Symbol("arg1"), Symbol("arg2")];
-  // deno-lint-ignore no-explicit-any
-  const targetReturned: any = options.target.returned ?? options.returned ??
+  const targetReturned: unknown = options.target.returned ?? options.returned ??
     Symbol("returned");
-  // deno-lint-ignore no-explicit-any
-  const passthroughArgs: any[] = options.args ?? targetArgs;
-  // deno-lint-ignore no-explicit-any
-  const passthroughReturned: any = options.returned ?? targetReturned;
+  const passthroughArgs: unknown[] = options.args ?? targetArgs;
+  const passthroughReturned: unknown = options.returned ?? targetReturned;
 
   let target: Stub<U>;
   if ("method" in options.target || "method" in options) {
@@ -71,12 +61,12 @@ export function assertPassthrough<T, U>(
   }
 
   // deno-lint-ignore no-explicit-any
-  let func: ((...args: any[]) => any);
+  let func: ((...args: any[]) => unknown);
   if ("instance" in options) {
     const instance: T = options.instance;
     const method: keyof T = options.method as keyof T;
     // deno-lint-ignore no-explicit-any
-    func = instance[method] as unknown as ((...args: any[]) => any);
+    func = instance[method] as unknown as ((...args: any[]) => unknown);
   } else {
     func = options.func;
   }
@@ -132,9 +122,8 @@ export function assertPassthrough<T, U>(
 /**
  * Asserts that a spy is called as much as expected and no more.
  */
-export function assertSpyCalls(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+export function assertSpyCalls<T>(
+  spy: Spy<T> | Stub<T>,
   expectedCalls: number,
 ) {
   try {
@@ -151,9 +140,8 @@ export function assertSpyCalls(
 /**
  * Asserts that a spy is called at least as much as expected.
  */
-export function assertSpyCallsMin(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+export function assertSpyCallsMin<T>(
+  spy: Spy<T> | Stub<T>,
   expectedCalls: number,
 ) {
   if (spy.calls.length < expectedCalls) {
@@ -164,21 +152,18 @@ export function assertSpyCallsMin(
 /** Call information recorded by a spy. */
 export interface ExpectedSpyCall {
   /** Arguments passed to a function when called. */
-  // deno-lint-ignore no-explicit-any
-  args?: any[];
+  args?: unknown[];
   /** The instance that a method was called on. */
-  // deno-lint-ignore no-explicit-any
-  self?: any;
+  self?: unknown;
   /**
    * The value that was returned by a function.
    * If you expect a promise to reject, expect error instead.
    */
-  // deno-lint-ignore no-explicit-any
-  returned?: any;
+  returned?: unknown;
   error?: {
     /** The class for the error that was thrown by a function. */
     // deno-lint-ignore no-explicit-any
-    Class?: any;
+    Class?: new (...args: any[]) => Error;
     /** Part of the message for the error that was thrown by a function. */
     msg?: string;
   };
@@ -188,9 +173,8 @@ export interface ExpectedSpyCall {
  * Asserts that a spy is called as expected.
  * Returns the call.
  */
-export function assertSpyCall(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+export function assertSpyCall<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
   expected?: ExpectedSpyCall,
 ) {
@@ -249,7 +233,7 @@ export function assertSpyCall(
       }
       assertIsError(
         call.error,
-        expected.error?.Class ?? Error,
+        expected.error?.Class,
         expected.error?.msg,
       );
     }
@@ -261,9 +245,8 @@ export function assertSpyCall(
  * Asserts that an async spy is called as expected.
  * Returns the call.
  */
-export async function assertSpyCallAsync(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+export async function assertSpyCallAsync<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
   expected?: ExpectedSpyCall,
 ) {
@@ -329,7 +312,7 @@ export async function assertSpyCallAsync(
 
     if ("error" in expected) {
       await assertRejects(
-        () => call.returned,
+        () => Promise.resolve(call.returned),
         expected.error?.Class ?? Error,
         expected.error?.msg ?? "",
       );
@@ -342,15 +325,12 @@ export async function assertSpyCallAsync(
  * Asserts that a spy is called with a specific arg as expected.
  * Returns the actual arg.
  */
-export function assertSpyCallArg(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+export function assertSpyCallArg<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
   argIndex: number,
-  // deno-lint-ignore no-explicit-any
-  expected: any,
-  // deno-lint-ignore no-explicit-any
-): any {
+  expected: unknown,
+): unknown {
   const call: SpyCall = assertSpyCall(spy, callIndex);
   const arg = call.args[argIndex];
   assertEquals(arg, expected);
@@ -364,54 +344,38 @@ export function assertSpyCallArg(
  * The end index is not included in the range of args that are compared.
  * Returns the actual args.
  */
-function assertSpyCallArgs(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+function assertSpyCallArgs<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
-  // deno-lint-ignore no-explicit-any
-  expected: any[],
-  // deno-lint-ignore no-explicit-any
-): any[];
-function assertSpyCallArgs(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+  expected: unknown[],
+): unknown[];
+function assertSpyCallArgs<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
   argsStart: number,
-  // deno-lint-ignore no-explicit-any
-  expected: any[],
-  // deno-lint-ignore no-explicit-any
-): any[];
-function assertSpyCallArgs(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+  expected: unknown[],
+): unknown[];
+function assertSpyCallArgs<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
   argStart: number,
   argEnd: number,
-  // deno-lint-ignore no-explicit-any
-  expected: any[],
-  // deno-lint-ignore no-explicit-any
-): any[];
-function assertSpyCallArgs(
-  // deno-lint-ignore no-explicit-any
-  spy: Spy<any> | Stub<any>,
+  expected: unknown[],
+): unknown[];
+function assertSpyCallArgs<T>(
+  spy: Spy<T> | Stub<T>,
   callIndex: number,
-  // deno-lint-ignore no-explicit-any
-  argsStart?: number | any[],
-  // deno-lint-ignore no-explicit-any
-  argsEnd?: number | any[],
-  // deno-lint-ignore no-explicit-any
-  expected?: any[],
-  // deno-lint-ignore no-explicit-any
-): any[] {
+  argsStart?: number | unknown[],
+  argsEnd?: number | unknown[],
+  expected?: unknown[],
+): unknown[] {
   const call: SpyCall = assertSpyCall(spy, callIndex);
   if (!expected) {
-    // deno-lint-ignore no-explicit-any
-    expected = argsEnd as any[];
+    expected = argsEnd as unknown[];
     argsEnd = undefined;
   }
   if (!expected) {
-    // deno-lint-ignore no-explicit-any
-    expected = argsStart as any[];
+    expected = argsStart as unknown[];
     argsStart = undefined;
   }
   const args = typeof argsEnd === "number"

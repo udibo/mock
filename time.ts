@@ -21,11 +21,7 @@ export const NativeTime = {
 
 /** Resolves after the given number of milliseconds using real time. */
 export function delay(ms: number): Promise<void> {
-  return time
-    ? FakeTime.restoreFor(() => {
-      return delayNative(ms);
-    })
-    : delayNative(ms);
+  return time ? FakeTime.restoreFor(() => delayNative(ms)) : delayNative(ms);
 }
 
 /** An error related to faking time. */
@@ -36,8 +32,7 @@ export class TimeError extends Error {
   }
 }
 
-// deno-lint-ignore no-explicit-any
-function isFakeDate(instance: any): instance is FakeDate {
+function isFakeDate(instance: unknown): instance is FakeDate {
   return instance instanceof FakeDate;
 }
 
@@ -158,10 +153,9 @@ function* timerId() {
 interface Timer {
   id: number;
   // deno-lint-ignore no-explicit-any
-  callback: (...args: any[]) => void;
+  callback: (...args: any[]) => unknown;
   delay: number;
-  // deno-lint-ignore no-explicit-any
-  args: any[];
+  args: unknown[];
   due: number;
   repeat: boolean;
 }
@@ -251,7 +245,7 @@ export class FakeTime {
 
   static setTimeout(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => void,
+    callback: (...args: any[]) => unknown,
     delay = 0,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
@@ -268,7 +262,7 @@ export class FakeTime {
 
   static setInterval(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => void,
+    callback: (...args: any[]) => unknown,
     delay = 0,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
@@ -301,10 +295,9 @@ export class FakeTime {
 
   private setTimer(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => void,
+    callback: (...args: any[]) => unknown,
     delay = 0,
-    // deno-lint-ignore no-explicit-any
-    args: any[],
+    args: unknown[],
     repeat = false,
   ): number {
     const id: number = this.timerId.next().value;
@@ -328,16 +321,14 @@ export class FakeTime {
   }
 
   /** Restores real time temporarily until callback returns and resolves. */
-  static async restoreFor(
+  static async restoreFor<T>(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => Promise<any> | any,
+    callback: (...args: any[]) => Promise<T> | T,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): Promise<any> {
+  ): Promise<T> {
     if (!time) throw new TimeError("no fake time");
-    // deno-lint-ignore no-explicit-any
-    let result: any;
+    let result: T;
     time.restoreGlobals();
     try {
       result = await callback.apply(null, args);
