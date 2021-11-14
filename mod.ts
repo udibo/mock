@@ -15,7 +15,13 @@ export {
 } from "./time.ts";
 export type { FakeDateConstructor, NativeDateConstructor } from "./time.ts";
 
-export { returnsArg, returnsArgs, returnsThis } from "./callbacks.ts";
+export {
+  resolvesNext,
+  returnsArg,
+  returnsArgs,
+  returnsNext,
+  returnsThis,
+} from "./callbacks.ts";
 
 export {
   assertPassthrough,
