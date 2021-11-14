@@ -1,4 +1,4 @@
-export { delay } from "https://deno.land/std@0.114.0/async/delay.ts";
+export type { DelayOptions } from "https://deno.land/std@0.114.0/async/delay.ts";
 
 export {
   assert,

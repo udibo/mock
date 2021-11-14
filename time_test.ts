@@ -2,9 +2,10 @@ import {
   assert,
   assertEquals,
   assertNotEquals,
+  assertRejects,
   assertStrictEquals,
 } from "./deps.ts";
-import { delay, FakeDate, FakeTime, NativeDate } from "./time.ts";
+import { FakeDate, FakeTime, NativeDate } from "./time.ts";
 import { Spy, spy, SpyCall } from "./spy.ts";
 import { assertPassthrough } from "./asserts.ts";
 
@@ -300,9 +301,236 @@ Deno.test("delay uses real time", async () => {
 
   try {
     assertEquals(Date.now(), start);
-    await delay(20);
+    await time.delay(20);
     assert(NativeDate.now() >= start + 20);
     assertEquals(Date.now(), start);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("delay runs all microtasks before resolving", async () => {
+  const time: FakeTime = new FakeTime();
+
+  try {
+    const seq = [];
+    queueMicrotask(() => seq.push(2));
+    queueMicrotask(() => seq.push(3));
+    seq.push(1);
+    await time.delay(20);
+    seq.push(4);
+    assertEquals(seq, [1, 2, 3, 4]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("delay with abort", async () => {
+  const time: FakeTime = new FakeTime();
+
+  try {
+    const seq = [];
+    const abort = new AbortController();
+    const { signal } = abort;
+    const delayedPromise = time.delay(100, { signal });
+    seq.push(1);
+    await FakeTime.restoreFor(() => {
+      setTimeout(() => {
+        seq.push(2);
+        abort.abort();
+      }, 0);
+    });
+    await assertRejects(
+      () => delayedPromise,
+      DOMException,
+      "Delay was aborted",
+    );
+    seq.push(3);
+    assertEquals(seq, [1, 2, 3]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("runMicrotasks runs all microtasks before resolving", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+
+  try {
+    const seq = [];
+    queueMicrotask(() => seq.push(2));
+    queueMicrotask(() => seq.push(3));
+    seq.push(1);
+    await time.runMicrotasks();
+    seq.push(4);
+    assertEquals(seq, [1, 2, 3, 4]);
+    assertEquals(Date.now(), start);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+  const cb: Spy<void> = spy(fromNow());
+  const expected: SpyCall[] = [];
+  const seq: number[] = [];
+
+  try {
+    setTimeout(cb, 1000);
+    queueMicrotask(() => seq.push(2));
+    queueMicrotask(() => seq.push(3));
+    seq.push(1);
+    await time.tickAsync(250);
+    seq.push(4);
+    assertEquals(cb.calls, expected);
+    await time.tickAsync(250);
+    assertEquals(cb.calls, expected);
+    queueMicrotask(() => seq.push(6));
+    seq.push(5);
+    await time.tickAsync(500);
+    seq.push(7);
+    expected.push({ args: [], returned: 1000 });
+    assertEquals(cb.calls, expected);
+    assertEquals(Date.now(), start + 1000);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("runNext runs next timer without running microtasks", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+  const cb: Spy<void> = spy(fromNow());
+  const seq: number[] = [];
+
+  try {
+    setTimeout(cb, 1000);
+    queueMicrotask(() => seq.push(3));
+    queueMicrotask(() => seq.push(4));
+    seq.push(1);
+    time.next();
+    seq.push(2);
+    const expectedCalls = [{ args: [], returned: 1000 }];
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+    await time.runMicrotasks();
+
+    queueMicrotask(() => seq.push(7));
+    queueMicrotask(() => seq.push(8));
+    seq.push(5);
+    time.next();
+    seq.push(6);
+    await time.runMicrotasks();
+
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("runNextAsync runs all microtasks and next timer", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+  const cb: Spy<void> = spy(fromNow());
+  const seq: number[] = [];
+
+  try {
+    setTimeout(cb, 1000);
+    queueMicrotask(() => seq.push(2));
+    queueMicrotask(() => seq.push(3));
+    seq.push(1);
+    await time.nextAsync();
+    seq.push(4);
+    const expectedCalls = [{ args: [], returned: 1000 }];
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+
+    queueMicrotask(() => seq.push(6));
+    queueMicrotask(() => seq.push(7));
+    seq.push(5);
+    await time.nextAsync();
+    seq.push(8);
+
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("runAll runs all timers without running microtasks", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+  const cb: Spy<void> = spy(fromNow());
+  const seq: number[] = [];
+
+  try {
+    setTimeout(cb, 1000);
+    setTimeout(cb, 1500);
+    queueMicrotask(() => seq.push(3));
+    queueMicrotask(() => seq.push(4));
+    seq.push(1);
+    time.runAll();
+    seq.push(2);
+    const expectedCalls = [
+      { args: [], returned: 1000 },
+      { args: [], returned: 1500 },
+    ];
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1500);
+    await time.runMicrotasks();
+
+    queueMicrotask(() => seq.push(7));
+    queueMicrotask(() => seq.push(8));
+    seq.push(5);
+    time.runAll();
+    seq.push(6);
+    await time.runMicrotasks();
+
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1500);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("runAllAsync runs all microtasks and timers", async () => {
+  const time: FakeTime = new FakeTime();
+  const start: number = Date.now();
+  const cb: Spy<void> = spy(fromNow());
+  const seq: number[] = [];
+
+  try {
+    setTimeout(cb, 1000);
+    setTimeout(cb, 1500);
+    queueMicrotask(() => seq.push(2));
+    queueMicrotask(() => seq.push(3));
+    seq.push(1);
+    await time.runAllAsync();
+    seq.push(4);
+    const expectedCalls = [
+      { args: [], returned: 1000 },
+      { args: [], returned: 1500 },
+    ];
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1500);
+
+    queueMicrotask(() => seq.push(6));
+    queueMicrotask(() => seq.push(7));
+    seq.push(5);
+    await time.runAllAsync();
+    seq.push(8);
+
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1500);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
   } finally {
     time.restore();
   }

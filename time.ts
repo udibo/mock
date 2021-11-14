@@ -1,12 +1,6 @@
 /** This module is browser compatible. */
 
-import {
-  applyMixins,
-  ascend,
-  delay as delayNative,
-  RBTree,
-  Vector,
-} from "./deps.ts";
+import { applyMixins, ascend, DelayOptions, RBTree, Vector } from "./deps.ts";
 
 export type NativeDate = Date;
 export type NativeDateConstructor = DateConstructor;
@@ -18,11 +12,6 @@ export const NativeTime = {
   setInterval,
   clearInterval,
 };
-
-/** Resolves after the given number of milliseconds using real time. */
-export function delay(ms: number): Promise<void> {
-  return time ? FakeTime.restoreFor(() => delayNative(ms)) : delayNative(ms);
-}
 
 /** An error related to faking time. */
 export class TimeError extends Error {
@@ -320,7 +309,9 @@ export class FakeTime {
     return id;
   }
 
-  /** Restores real time temporarily until callback returns and resolves. */
+  /**
+   * Restores real time temporarily until callback returns and resolves.
+   */
   static async restoreFor<T>(
     // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => Promise<T> | T,
@@ -341,6 +332,7 @@ export class FakeTime {
   /**
    * The amount of milliseconds elapsed since January 1, 1970 00:00:00 UTC for the fake time.
    * When set, it will call any functions waiting to be called between the current and new fake time.
+   * If the timer callback throws, time will stop advancing forward beyond that timer.
    */
   get now(): number {
     return this._now;
@@ -381,12 +373,97 @@ export class FakeTime {
     throw new Error("cannot change start time after initialization");
   }
 
+  /** Resolves after the given number of milliseconds using real time. */
+  async delay(ms: number, options: DelayOptions = {}): Promise<void> {
+    const { signal } = options;
+    if (signal?.aborted) {
+      return Promise.reject(
+        new DOMException("Delay was aborted.", "AbortError"),
+      );
+    }
+    return await new Promise((resolve, reject) => {
+      let timer: number | null = null;
+      const abort = () =>
+        FakeTime
+          .restoreFor(() => {
+            if (timer) clearTimeout(timer);
+          })
+          .then(() =>
+            reject(new DOMException("Delay was aborted.", "AbortError"))
+          );
+      const done = () => {
+        signal?.removeEventListener("abort", abort);
+        resolve();
+      };
+      FakeTime.restoreFor(() => setTimeout(done, ms))
+        .then((id) => timer = id);
+      signal?.addEventListener("abort", abort, { once: true });
+    });
+  }
+
+  /** Runs all pending microtasks. */
+  async runMicrotasks(): Promise<void> {
+    await this.delay(0);
+  }
+
   /**
    * Adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    */
-  tick(ms = 0) {
+  tick(ms = 0): void {
     this.now += ms;
+  }
+
+  /**
+   * Runs all pending microtasks then adds the specified number of milliseconds to the fake time.
+   * This will call any functions waiting to be called between the current and new fake time.
+   */
+  async tickAsync(ms = 0): Promise<void> {
+    await this.runMicrotasks();
+    this.now += ms;
+  }
+
+  /**
+   * Advances time to when the next scheduled timer is due.
+   * If there are no pending timers, time will not be changed.
+   * Returns true when there is a scheduled timer and false when there is not.
+   */
+  next(): boolean {
+    const next = this.dueTree.min();
+    if (next) this.now = next.due;
+    return !!next;
+  }
+
+  /**
+   * Runs all pending microtasks then advances time to when the next scheduled timer is due.
+   * If there are no pending timers, time will not be changed.
+   */
+  async nextAsync(): Promise<boolean> {
+    await this.runMicrotasks();
+    return this.next();
+  }
+
+  /**
+   * Advances time forward to the next due timer until there are no pending timers remaining.
+   * If the timers create additional timers, they will be run too. If there is an interval,
+   * time will keep advancing forward until the interval is cleared.
+   */
+  runAll(): void {
+    while (!this.dueTree.isEmpty()) {
+      this.next();
+    }
+  }
+
+  /**
+   * Advances time forward to the next due timer until there are no pending timers remaining.
+   * If the timers create additional timers, they will be run too. If there is an interval,
+   * time will keep advancing forward until the interval is cleared.
+   * Runs all pending microtasks before each timer.
+   */
+  async runAllAsync(): Promise<void> {
+    while (!this.dueTree.isEmpty()) {
+      await this.nextAsync();
+    }
   }
 
   /** Restores time related global functions to their original state. */
