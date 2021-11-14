@@ -1,9 +1,9 @@
+import { returnsNext } from "../callbacks.ts";
 import { assertEquals } from "../deps.ts";
 import { Stub, stub } from "../stub.ts";
 
 class Database {
-  // deno-lint-ignore no-explicit-any
-  query(_query: string, _params: any[]): any[][] {
+  query(_query: string, _params: unknown[]): unknown[][] {
     throw new Error("unimplemented");
   }
 }
@@ -24,16 +24,17 @@ function getUsers(
 
 Deno.test("getUsers", () => {
   const db: Database = new Database();
-  const query: Stub<Database> = stub(db, "query", [
+  const returns: [number, string][][] = [
     [[1, "jd"], [2, "johnd"], [3, "janedoe"]],
     [[2, "johnd"]],
-  ]);
+  ];
+  const query: Stub<Database> = stub(db, "query", returnsNext(returns));
 
   try {
     assertEquals(getUsers(db, "doe"), ["1 jd", "2 johnd", "3 janedoe"]);
     assertEquals(getUsers(db, "doe", "john"), ["2 johnd"]);
 
-    query.returns.push([[3, "janedoe"]]);
+    returns.push([[3, "janedoe"]]);
     assertEquals(getUsers(db, "doe"), ["3 janedoe"]);
 
     assertEquals(query.calls, [

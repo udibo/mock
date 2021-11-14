@@ -32,23 +32,28 @@ export class SpyMixin<T> {
   // deno-lint-ignore no-explicit-any
   func?: (...args: any[]) => unknown;
   obj?: T;
-  method?: keyof T;
-  methodDescriptor?: PropertyDescriptor;
+  property?: keyof T;
+  propertyDescriptor?: PropertyDescriptor;
+  original?: unknown;
   get?: Spy<T>;
   set?: Spy<T>;
   restored?: boolean;
 
   restore(): void {
-    if (this.obj && this.method) {
+    if (this.obj && this.property) {
       if (!this.restored) {
-        if (this.methodDescriptor) {
-          Object.defineProperty(this.obj, this.method, this.methodDescriptor);
+        if (this.propertyDescriptor) {
+          Object.defineProperty(
+            this.obj,
+            this.property,
+            this.propertyDescriptor,
+          );
         } else {
-          delete this.obj[this.method];
+          delete this.obj[this.property];
         }
         this.restored = true;
-      } else throw new SpyError("instance method already restored");
-    } else throw new SpyError("no instance method to restore");
+      } else throw new SpyError("instance property already restored");
+    } else throw new SpyError("no instance property to restore");
   }
 }
 
@@ -64,26 +69,26 @@ export interface Spy<T> {
   get?: Spy<T>;
   /** A spy on the setter for an instance attribute. */
   set?: Spy<T>;
-  /** Removes spy wrapper from instance method. */
+  /** Removes spy wrapper from instance property. */
   restore(): void;
 }
 
-/** Wraps a function or instance method with a Spy. */
-type AnySpy<T> = Spy<T> | Spy<void>;
-type AnySpyInternal<T> = SpyMixin<T> | SpyMixin<void>;
+/** Wraps a function or instance property with a Spy. */
+export type AnySpy<T> = Spy<T> | Spy<void>;
+export type AnySpyInternal<T> = SpyMixin<T> | SpyMixin<void>;
 function spy(): Spy<void>;
 // deno-lint-ignore no-explicit-any
 function spy(func: (...args: any[]) => unknown): Spy<void>;
-function spy<T>(obj: T, method: string | number | symbol): Spy<T>;
+function spy<T>(obj: T, property: string | number | symbol): Spy<T>;
 function spy<T>(
   // deno-lint-ignore no-explicit-any
   objOrFunc?: T | ((...args: any[]) => unknown),
-  method?: string | number | symbol,
+  property?: string | number | symbol,
 ): AnySpy<T> {
   const calls: SpyCall[] = [];
   const result: AnySpy<T> = function (this: T | void): unknown {
     if (spyInternal.restored) {
-      throw new SpyError("instance method already restored");
+      throw new SpyError("instance property already restored");
     }
     const call: SpyCall = { args: Array.from(arguments) };
     let returned: unknown;
@@ -112,45 +117,47 @@ function spy<T>(
   result.calls = calls;
   const spyInternal: AnySpyInternal<T> = result;
   const obj: T = objOrFunc as T;
-  const methodKey: keyof T = method as keyof T;
-  if (typeof method !== "undefined") {
+  const propertyKey: keyof T = property as keyof T;
+  if (typeof property !== "undefined") {
     if (obj) spyInternal.obj = obj;
-    spyInternal.method = methodKey;
-    spyInternal.methodDescriptor = Object.getOwnPropertyDescriptor(
+    spyInternal.property = propertyKey;
+    spyInternal.propertyDescriptor = Object.getOwnPropertyDescriptor(
       obj,
-      methodKey,
+      propertyKey,
     );
     if (
-      spyInternal.methodDescriptor && !spyInternal.methodDescriptor.configurable
+      spyInternal.propertyDescriptor &&
+      !spyInternal.propertyDescriptor.configurable
     ) {
       throw new SpyError("cannot redefine property");
     }
 
-    let value: unknown;
-    if (!spyInternal.methodDescriptor) {
-      value = obj[methodKey];
-    } else if ("value" in spyInternal.methodDescriptor) {
-      value = spyInternal.methodDescriptor.value;
+    const { propertyDescriptor } = spyInternal;
+    if (propertyDescriptor) {
+      Object.defineProperty(spyInternal, "original", propertyDescriptor);
+    } else {
+      spyInternal.original = obj[propertyKey];
     }
+    let value = spyInternal.original;
     if (typeof value === "function") {
       if (isSpy(value)) {
         console.error("already spying on function");
       }
       // deno-lint-ignore no-explicit-any
-      spyInternal.func = value as (...args: any[]) => unknown;
+      spyInternal.func = spyInternal.original as (...args: any[]) => unknown;
       value = result;
     }
     spyInternal.restored = false;
     spyInternal.get = spy(
-      spyInternal.methodDescriptor?.get ??
+      spyInternal.propertyDescriptor?.get ??
         (() => value),
     );
     spyInternal.set = spy(
-      spyInternal.methodDescriptor?.set ?? ((v: unknown) => {
+      spyInternal.propertyDescriptor?.set ?? ((v: unknown) => {
         value = v;
       }),
     );
-    Object.defineProperty(obj, methodKey, {
+    Object.defineProperty(obj, propertyKey, {
       configurable: true,
       get: function () {
         return spyInternal.get?.call(this);

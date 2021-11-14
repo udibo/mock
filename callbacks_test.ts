@@ -1,5 +1,11 @@
-import { assertEquals } from "./deps.ts";
-import { returnsArg, returnsArgs, returnsThis } from "./callbacks.ts";
+import { assertEquals, delay } from "./deps.ts";
+import {
+  resolvesNext,
+  returnsArg,
+  returnsArgs,
+  returnsNext,
+  returnsThis,
+} from "./callbacks.ts";
 
 Deno.test("returnsThis", () => {
   const callback = returnsThis();
@@ -37,4 +43,50 @@ Deno.test("returnsArgs", () => {
   assertEquals(callback("b", "c"), ["c"]);
   assertEquals(callback("d", "e", "f"), ["e", "f"]);
   assertEquals(callback("d", "e", "f", "g"), ["e", "f"]);
+});
+
+Deno.test("returnsNext array", () => {
+  let results: number[] = [1, 2, 3];
+  let callback = returnsNext(results);
+  assertEquals(callback(), 1);
+  assertEquals(callback(), 2);
+  assertEquals(callback(), 3);
+  assertEquals(callback(), undefined);
+
+  results = [];
+  callback = returnsNext(results);
+  results.push(1, 2, 3);
+  assertEquals(callback(), 1);
+  assertEquals(callback(), 2);
+  assertEquals(callback(), 3);
+  results.push(4);
+  assertEquals(callback(), 4);
+  assertEquals(callback(), undefined);
+  results.push(5);
+  assertEquals(callback(), undefined);
+});
+
+Deno.test("resolvesNext array", async () => {
+  let results: number[] = [1, 2, 3];
+  const asyncIterator = async function* () {
+    await delay(0);
+    yield* results;
+  };
+  let callback = resolvesNext(asyncIterator());
+  assertEquals(await callback(), 1);
+  assertEquals(await callback(), 2);
+  assertEquals(await callback(), 3);
+  assertEquals(await callback(), undefined);
+
+  results = [];
+  callback = resolvesNext(asyncIterator());
+  results.push(1, 2, 3);
+  assertEquals(await callback(), 1);
+  assertEquals(await callback(), 2);
+  assertEquals(await callback(), 3);
+  results.push(4);
+  assertEquals(await callback(), 4);
+  assertEquals(await callback(), undefined);
+  results.push(5);
+  assertEquals(await callback(), undefined);
 });

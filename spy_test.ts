@@ -56,7 +56,7 @@ Deno.test("spy default", () => {
   assertThrows(
     () => func.restore(),
     SpyError,
-    "no instance method to restore",
+    "no instance property to restore",
   );
 });
 
@@ -108,11 +108,11 @@ Deno.test("spy function", () => {
   assertThrows(
     () => func.restore(),
     SpyError,
-    "no instance method to restore",
+    "no instance property to restore",
   );
 });
 
-Deno.test("spy instance method", () => {
+Deno.test("spy instance property", () => {
   const point = new Point(2, 3);
   const func: Spy<Point> = spy(point, "action");
   assertSpyCalls(func, 0);
@@ -201,12 +201,12 @@ Deno.test("spy instance method", () => {
   assertThrows(
     () => func.restore(),
     SpyError,
-    "instance method already restored",
+    "instance property already restored",
   );
   assertThrows(
     () => func(),
     SpyError,
-    "instance method already restored",
+    "instance property already restored",
   );
 });
 
@@ -241,7 +241,7 @@ Deno.test("spy instance method symbol", () => {
   assertThrows(
     () => func.restore(),
     SpyError,
-    "instance method already restored",
+    "instance property already restored",
   );
 });
 
@@ -304,7 +304,7 @@ Deno.test("spy instance method property descriptor", () => {
   assertThrows(
     () => action.restore(),
     SpyError,
-    "instance method already restored",
+    "instance property already restored",
   );
 });
 
@@ -360,7 +360,7 @@ Deno.test("spy instance method property getter/setter", () => {
   assertThrows(
     () => action.restore(),
     SpyError,
-    "instance method already restored",
+    "instance property already restored",
   );
 });
 
@@ -409,6 +409,6 @@ Deno.test("spy instance property getter/setter", () => {
   assertThrows(
     () => x.restore(),
     SpyError,
-    "instance method already restored",
+    "instance property already restored",
   );
 });
