@@ -548,11 +548,10 @@ Deno.test("FakeTime ticks forward at advanceFrequency when advanceRate is set", 
     assertEquals(Date.now(), start);
     await time.delay(100);
     await time.delay(5);
-    assert(Date.now() >= start + 1500);
-    assert(Date.now() < start + 4500);
+    assertEquals(Date.now(), start + 1500);
     await time.delay(200);
     await time.delay(5);
-    assert(Date.now() >= start + 4500);
+    assertEquals(Date.now(), start + 4500);
   } finally {
     time.restore();
   }
