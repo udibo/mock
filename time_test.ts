@@ -536,69 +536,23 @@ Deno.test("runAllAsync runs all microtasks and timers", async () => {
   }
 });
 
-Deno.test("FakeTime ticks forward when advanceRate is set", async () => {
-  let time: FakeTime = new FakeTime(null, { advanceRate: 1 });
-
-  try {
-    let start: number = Date.now();
-    await time.delay(5);
-    assertEquals(Date.now(), start);
-    await time.delay(5);
-    await time.delay(5);
-    assert(Date.now() >= start + 10);
-    assert(Date.now() < start + 30);
-    await time.delay(15);
-    await time.delay(5);
-    assert(Date.now() >= start + 30);
-    time.restore();
-
-    time = new FakeTime(null, { advanceRate: 1000 });
-    start = Date.now();
-    await time.delay(5);
-    assertEquals(Date.now(), start);
-    await time.delay(5);
-    await time.delay(5);
-    assert(Date.now() >= start + 10000);
-    assert(Date.now() < start + 30000);
-    await time.delay(15);
-    await time.delay(5);
-    assert(Date.now() >= start + 30000);
-  } finally {
-    time.restore();
-  }
-});
-
 Deno.test("FakeTime ticks forward at advanceFrequency when advanceRate is set", async () => {
-  let time: FakeTime = new FakeTime(
+  const time: FakeTime = new FakeTime(
     null,
-    { advanceRate: 1, advanceFrequency: 15 },
+    { advanceRate: 15, advanceFrequency: 100 },
   );
 
   try {
-    let start: number = Date.now();
-    await time.delay(5);
+    const start = Date.now();
+    await time.delay(50);
     assertEquals(Date.now(), start);
-    await time.delay(10);
+    await time.delay(100);
     await time.delay(5);
-    assert(Date.now() >= start + 15);
-    assert(Date.now() < start + 45);
-    await time.delay(25);
+    assert(Date.now() >= start + 1500);
+    assert(Date.now() < start + 4500);
+    await time.delay(200);
     await time.delay(5);
-    assert(Date.now() >= start + 45);
-    time.restore();
-
-    time = new FakeTime(null, { advanceRate: 1000, advanceFrequency: 15 });
-    start = Date.now();
-    await time.delay(5);
-    assertEquals(Date.now(), start);
-    await time.delay(10);
-    await time.delay(5);
-    assert(Date.now() >= start + 15000);
-    assert(Date.now() < start + 45000);
-    await time.delay(25);
-    await time.delay(5);
-    assert(Date.now() >= start + 45000);
-    start = Date.now();
+    assert(Date.now() >= start + 4500);
   } finally {
     time.restore();
   }
