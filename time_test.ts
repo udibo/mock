@@ -544,15 +544,19 @@ Deno.test("FakeTime ticks forward at advanceFrequency when advanceRate is set", 
 
   try {
     const start = Date.now();
-    await time.delay(20);
-    await time.delay(5);
+    const dt = () => Date.now() - start;
+    await time.delay(25);
     assertEquals(Date.now(), start);
     await time.delay(100);
     await time.delay(5);
-    assertEquals(Date.now(), start + 1500);
+    let actualDt = dt();
+    assert(dt() >= 1500, `expected dt ${actualDt} >= 1500`);
+    assert(dt() < 4500, `expected dt ${actualDt} < 4500`);
     await time.delay(200);
     await time.delay(5);
-    assertEquals(Date.now(), start + 4500);
+    actualDt = dt();
+    assert(actualDt >= 4500, `expected dt ${actualDt} >= 4500`);
+    assert(actualDt < 7500, `expected dt ${actualDt} < 7500`);
   } finally {
     time.restore();
   }
