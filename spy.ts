@@ -13,9 +13,11 @@ export class SpyError extends Error {
 /** Call information recorded by a spy. */
 export interface SpyCall {
   /** Arguments passed to a function when called. */
-  args: unknown[];
+  // deno-lint-ignore no-explicit-any
+  args: any[];
   /** The instance that a method was called on. */
-  self?: unknown;
+  // deno-lint-ignore no-explicit-any
+  self?: any;
   /** The value that was returned by a function. */
   // deno-lint-ignore no-explicit-any
   returned?: any;

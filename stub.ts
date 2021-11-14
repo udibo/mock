@@ -5,7 +5,8 @@ import { AnySpyInternal, Spy, spy, SpyCall, SpyError } from "./spy.ts";
 /** An instance method wrapper that overrides the original method and records all calls made to it. */
 export interface Stub<T> extends Spy<T> {
   /** The original value that was replaced with the stub. */
-  original: unknown;
+  // deno-lint-ignore no-explicit-any
+  original: any;
 }
 export type AnyStub<T> = Stub<T> | Stub<void>;
 
