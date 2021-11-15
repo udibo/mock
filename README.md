@@ -1,7 +1,7 @@
 # Mock
 
-[![release](https://img.shields.io/badge/release-0.11.0-success)](https://github.com/udibo/mock/releases/tag/0.11.0)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.11.0/mod.ts)
+[![release](https://img.shields.io/badge/release-0.12.0-success)](https://github.com/udibo/mock/releases/tag/0.12.0)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.12.0/mod.ts)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/udibo/mock/branch/master/graph/badge.svg?token=TXORMSEHM7)](https://codecov.io/gh/udibo/mock)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
@@ -30,9 +30,9 @@ imported directly from GitHub using raw content URLs.
 
 ```ts
 // Import from Deno's third party module registry
-import { spy, Spy } from "https://deno.land/x/mock@0.11.0/mod.ts";
+import { spy, Spy } from "https://deno.land/x/mock@0.12.0/mod.ts";
 // Import from GitHub
-import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/0.11.0/mod.ts";
+import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/0.12.0/mod.ts";
 ```
 
 If you do not need all of the sub-modules, you can choose to just import the
@@ -40,12 +40,12 @@ sub-modules you need.
 
 ```ts
 // Import from Deno's third party module registry
-import { Spy, spy } from "https://deno.land/x/mock@0.11.0/spy.ts";
+import { Spy, spy } from "https://deno.land/x/mock@0.12.0/spy.ts";
 // Import from GitHub
 import {
   Spy,
   spy,
-} from "https://raw.githubusercontent.com/udibo/mock/0.11.0/spy.ts";
+} from "https://raw.githubusercontent.com/udibo/mock/0.12.0/spy.ts";
 ```
 
 #### Sub-modules
@@ -69,7 +69,7 @@ If a Node.js package has the type "module" specified in its package.json file,
 the JavaScript bundle can be imported as a `.js` file.
 
 ```js
-import { Spy, spy } from "./mock_0.11.0.js";
+import { Spy, spy } from "./mock_0.12.0.js";
 ```
 
 The default type for Node.js packages is "commonjs". To import the bundle into a
@@ -77,7 +77,7 @@ commonjs package, the file extension of the JavaScript bundle must be changed
 from `.js` to `.mjs`.
 
 ```js
-import { Spy, spy } from "./mock_0.11.0.mjs";
+import { Spy, spy } from "./mock_0.12.0.mjs";
 ```
 
 See [Node.js Documentation](https://nodejs.org/api/esm.html) for more
@@ -96,7 +96,7 @@ modules must have the type attribute set to "module".
 
 ```js
 // main.js
-import { Spy, spy } from "./mock_0.11.0.js";
+import { Spy, spy } from "./mock_0.12.0.js";
 ```
 
 You can also embed a module script directly into an HTML file by placing the
@@ -104,7 +104,7 @@ JavaScript code within the body of the script tag.
 
 ```html
 <script type="module">
-  import { spy, Spy } from "./mock_0.11.0.js";
+  import { spy, Spy } from "./mock_0.12.0.js";
 </script>
 ```
 
@@ -120,7 +120,7 @@ a try block then restore the function in a finally block to ensure the original
 instance method is restored before continuing to other tests. The same applies
 when using fake time.
 
-See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.11.0/mod.ts) for
+See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.12.0/mod.ts) for
 more information.
 
 ### Spy
@@ -136,8 +136,8 @@ for any calls made to it.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { assertSpyCall } from "https://deno.land/x/mock@0.11.0/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@0.11.0/spy.ts";
+import { assertSpyCall } from "https://deno.land/x/mock@0.12.0/asserts.ts";
+import { Spy, spy } from "https://deno.land/x/mock@0.12.0/spy.ts";
 
 function add(
   a: number,
@@ -164,7 +164,7 @@ normally, you can wrap it with a spy.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@0.11.0/spy.ts";
+import { Spy, spy } from "https://deno.land/x/mock@0.12.0/spy.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
   return values.filter(callback);
@@ -196,7 +196,7 @@ spy error saying "already spying on function".
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@0.11.0/spy.ts";
+import { Spy, spy } from "https://deno.land/x/mock@0.12.0/spy.ts";
 
 class Database {
   private queries: any;
@@ -285,7 +285,7 @@ calls made to it.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@0.11.0/stub.ts";
+import { Stub, stub } from "https://deno.land/x/mock@0.12.0/stub.ts";
 
 class Cat {
   action(name: string): any {
@@ -320,7 +320,7 @@ will return undefined to each call after the iterator is done.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@0.11.0/stub.ts";
+import { Stub, stub } from "https://deno.land/x/mock@0.12.0/stub.ts";
 
 class Database {
   query(query: string, params: any[]): any[][] {
@@ -394,7 +394,7 @@ instead of the original, you can create a stub with a replacement function.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@0.11.0/stub.ts";
+import { Stub, stub } from "https://deno.land/x/mock@0.12.0/stub.ts";
 
 class Database {
   query(query: string, params: any[]): any[][] {
@@ -470,8 +470,8 @@ controlled through the fake time instance.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.114.0/testing/asserts.ts";
-import { Spy, spy } from "https://deno.land/x/mock@0.11.0/spy.ts";
-import { FakeTime } from "https://deno.land/x/mock@0.11.0/time.ts";
+import { Spy, spy } from "https://deno.land/x/mock@0.12.0/spy.ts";
+import { FakeTime } from "https://deno.land/x/mock@0.12.0/time.ts";
 
 function secondInterval(cb: () => void): void {
   setInterval(cb, 1000);
