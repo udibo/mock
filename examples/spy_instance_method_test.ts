@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps.ts";
-import { Spy, spy } from "../spy.ts";
+import { assertSpyCall, assertSpyCalls, Spy, spy } from "../mod.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
@@ -16,6 +16,7 @@ class Database {
       },
     };
   }
+
   // deno-lint-ignore no-explicit-any
   query(query: string, params: any[]): any[][] {
     return this.queries[query][params[0]]; // implementation not important for example
@@ -46,31 +47,30 @@ Deno.test("functions call db.query", () => {
 
   try {
     assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
+    assertSpyCall(query, 0, {
+      args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
+      self: db,
+      returned: [[1, "Doe"], [3, "Smith"]],
+    });
     assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
+    assertSpyCall(query, 1, {
+      args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
+      self: db,
+      returned: [[1, "Jane"], [2, "John"]],
+    });
     assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
+    assertSpyCall(query, 2, {
+      args: ["select id, last_name from USERS where first_name=?", ["John"]],
+      self: db,
+      returned: [[2, "Doe"]],
+    });
     assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
-    assertEquals(query.calls, [
-      {
-        args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
-        self: db,
-        returned: [[1, "Doe"], [3, "Smith"]],
-      },
-      {
-        args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
-        self: db,
-        returned: [[1, "Jane"], [2, "John"]],
-      },
-      {
-        args: ["select id, last_name from USERS where first_name=?", ["John"]],
-        self: db,
-        returned: [[2, "Doe"]],
-      },
-      {
-        args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
-        self: db,
-        returned: [[3, "Jane"]],
-      },
-    ]);
+    assertSpyCall(query, 3, {
+      args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
+      self: db,
+      returned: [[3, "Jane"]],
+    });
+    assertSpyCalls(query, 4);
   } finally {
     query.restore();
   }
