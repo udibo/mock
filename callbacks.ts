@@ -40,7 +40,7 @@ export function returnsNext<T>(
 }
 
 export function resolvesNext<T>(
-  iterable: AsyncIterable<T>,
+  iterable: Iterable<T> | AsyncIterable<T>,
   // deno-lint-ignore no-explicit-any
 ): (...args: any[]) => Promise<T | void> {
   const gen = (async function* returnsValue() {

@@ -1,5 +1,5 @@
-export { delay } from "https://deno.land/std@0.114.0/async/delay.ts";
-export type { DelayOptions } from "https://deno.land/std@0.114.0/async/delay.ts";
+export { delay } from "https://deno.land/std@0.115.1/async/delay.ts";
+export type { DelayOptions } from "https://deno.land/std@0.115.1/async/delay.ts";
 
 export {
   assert,
@@ -10,7 +10,7 @@ export {
   assertRejects,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.114.0/testing/asserts.ts";
+} from "https://deno.land/std@0.115.1/testing/asserts.ts";
 
 export { RBTree } from "https://deno.land/x/collections@0.11.2/trees/rb_tree.ts";
 export { ascend } from "https://deno.land/x/collections@0.11.2/comparators.ts";

@@ -1,6 +1,5 @@
 import { assertEquals } from "../deps.ts";
-import { assertSpyCall } from "../asserts.ts";
-import { Spy, spy } from "../spy.ts";
+import { assertSpyCall, Spy, spy } from "../mod.ts";
 
 function add(
   a: number,
