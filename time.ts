@@ -142,7 +142,7 @@ function* timerId() {
 interface Timer {
   id: number;
   // deno-lint-ignore no-explicit-any
-  callback: (...args: any[]) => unknown;
+  callback: (...args: any[]) => void;
   delay: number;
   args: unknown[];
   due: number;
@@ -234,7 +234,7 @@ export class FakeTime {
 
   static setTimeout(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => unknown,
+    callback: (...args: any[]) => void,
     delay = 0,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
@@ -268,9 +268,10 @@ export class FakeTime {
 
   private overrideGlobals(): void {
     globalThis.Date = FakeDate;
-    globalThis.setTimeout = FakeTime.setTimeout;
+    globalThis.setTimeout = FakeTime.setTimeout as typeof NativeTime.setTimeout;
     globalThis.clearTimeout = FakeTime.clearTimeout;
-    globalThis.setInterval = FakeTime.setInterval;
+    globalThis.setInterval = FakeTime
+      .setInterval as typeof NativeTime.setInterval;
     globalThis.clearInterval = FakeTime.clearInterval;
   }
 
@@ -284,7 +285,7 @@ export class FakeTime {
 
   private setTimer(
     // deno-lint-ignore no-explicit-any
-    callback: (...args: any[]) => unknown,
+    callback: (...args: any[]) => void,
     delay = 0,
     args: unknown[],
     repeat = false,

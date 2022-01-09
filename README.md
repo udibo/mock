@@ -1,7 +1,7 @@
 # Mock
 
-[![release](https://img.shields.io/badge/release-0.12.1-success)](https://github.com/udibo/mock/releases/tag/0.12.1)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.12.1/mod.ts)
+[![release](https://img.shields.io/badge/release-0.12.2-success)](https://github.com/udibo/mock/releases/tag/0.12.2)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.12.2/mod.ts)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/udibo/mock/branch/master/graph/badge.svg?token=TXORMSEHM7)](https://codecov.io/gh/udibo/mock)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
@@ -30,9 +30,9 @@ imported directly from GitHub using raw content URLs.
 
 ```ts
 // Import from Deno's third party module registry
-import { spy, Spy } from "https://deno.land/x/mock@0.12.1/mod.ts";
+import { spy, Spy } from "https://deno.land/x/mock@0.12.2/mod.ts";
 // Import from GitHub
-import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/0.12.1/mod.ts";
+import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/0.12.2/mod.ts";
 ```
 
 If you do not need all of the sub-modules, you can choose to just import the
@@ -40,12 +40,12 @@ sub-modules you need.
 
 ```ts
 // Import from Deno's third party module registry
-import { Spy, spy } from "https://deno.land/x/mock@0.12.1/spy.ts";
+import { Spy, spy } from "https://deno.land/x/mock@0.12.2/spy.ts";
 // Import from GitHub
 import {
   Spy,
   spy,
-} from "https://raw.githubusercontent.com/udibo/mock/0.12.1/spy.ts";
+} from "https://raw.githubusercontent.com/udibo/mock/0.12.2/spy.ts";
 ```
 
 #### Sub-modules
@@ -69,7 +69,7 @@ If a Node.js package has the type "module" specified in its package.json file,
 the JavaScript bundle can be imported as a `.js` file.
 
 ```js
-import { Spy, spy } from "./mock_0.12.1.js";
+import { Spy, spy } from "./mock_0.12.2.js";
 ```
 
 The default type for Node.js packages is "commonjs". To import the bundle into a
@@ -77,7 +77,7 @@ commonjs package, the file extension of the JavaScript bundle must be changed
 from `.js` to `.mjs`.
 
 ```js
-import { Spy, spy } from "./mock_0.12.1.mjs";
+import { Spy, spy } from "./mock_0.12.2.mjs";
 ```
 
 See [Node.js Documentation](https://nodejs.org/api/esm.html) for more
@@ -96,7 +96,7 @@ modules must have the type attribute set to "module".
 
 ```js
 // main.js
-import { Spy, spy } from "./mock_0.12.1.js";
+import { Spy, spy } from "./mock_0.12.2.js";
 ```
 
 You can also embed a module script directly into an HTML file by placing the
@@ -104,7 +104,7 @@ JavaScript code within the body of the script tag.
 
 ```html
 <script type="module">
-  import { spy, Spy } from "./mock_0.12.1.js";
+  import { spy, Spy } from "./mock_0.12.2.js";
 </script>
 ```
 
@@ -120,7 +120,7 @@ a try block then restore the function in a finally block to ensure the original
 instance method is restored before continuing to other tests. The same applies
 when using fake time.
 
-See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.12.1/mod.ts) for
+See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.12.2/mod.ts) for
 more information.
 
 ### Spy
@@ -135,12 +135,12 @@ anything, you can create an empty spy. An empty spy will just return undefined
 for any calls made to it.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.115.1/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
 import {
   assertSpyCall,
   Spy,
   spy,
-} from "https://deno.land/x/mock@0.12.1/mod.ts";
+} from "https://deno.land/x/mock@0.12.2/mod.ts";
 
 function add(
   a: number,
@@ -166,13 +166,13 @@ If you have a function that takes a callback that needs to still behave
 normally, you can wrap it with a spy.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.115.1/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
 import {
   assertSpyCall,
   assertSpyCalls,
   Spy,
   spy,
-} from "https://deno.land/x/mock@0.12.1/mod.ts";
+} from "https://deno.land/x/mock@0.12.2/mod.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
   return values.filter(callback);
@@ -202,13 +202,13 @@ method. If it is not restored and you attempt to wrap it again, it will throw a
 spy error saying "already spying on function".
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.115.1/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
 import {
   assertSpyCall,
   assertSpyCalls,
   Spy,
   spy,
-} from "https://deno.land/x/mock@0.12.1/mod.ts";
+} from "https://deno.land/x/mock@0.12.2/mod.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
@@ -298,8 +298,8 @@ you can create an empty stub. An empty stub will just return undefined for any
 calls made to it.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.115.1/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@0.12.1/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
+import { Stub, stub } from "https://deno.land/x/mock@0.12.2/stub.ts";
 
 class Cat {
   action(name: string): any {
@@ -336,14 +336,14 @@ considered complete if called after all values have been returned. The callback
 will return undefined to each call after the iterator is done.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.115.1/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
 import {
   assertSpyCallAsync,
   assertSpyCalls,
   resolvesNext,
   Stub,
   stub,
-} from "https://deno.land/x/mock@0.12.1/mod.ts";
+} from "https://deno.land/x/mock@0.12.2/mod.ts";
 
 class Database {
   query(_query: string, _params: unknown[]): Promise<unknown[][]> {
@@ -420,7 +420,7 @@ Overrides the real Date object and timer functions with fake ones that can be
 controlled through the fake time instance.
 
 ```ts
-import { FakeTime, Spy, spy } from "https://deno.land/x/mock@0.12.1/mod.ts";
+import { FakeTime, Spy, spy } from "https://deno.land/x/mock@0.12.2/mod.ts";
 
 function secondInterval(cb: () => void): void {
   setInterval(cb, 1000);
