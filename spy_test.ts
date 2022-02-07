@@ -96,6 +96,22 @@ Deno.test("spy function", () => {
   });
   assertSpyCalls(func, 4);
 
+  // Assert functions with variable types
+  const spiedFn = spy((a: number, b: boolean) => b ? a - 1 : a);
+  assertEquals(spiedFn(1, true), 0);
+  assertSpyCall(spiedFn, 0, {
+    returned: 0,
+    args: [1, true],
+  });
+
+  assertEquals(spiedFn(1, false), 1);
+  assertSpyCall(spiedFn, 1, {
+    returned: 1,
+    args: [1, false],
+  });
+
+  assertSpyCalls(spiedFn, 2);
+
   const point: Point = new Point(2, 3);
   assertEquals(func(Point, stringifyPoint, point), Point);
   assertSpyCall(func, 4, {
