@@ -60,9 +60,15 @@ export class SpyMixin<T> {
 }
 
 /** A function or instance method wrapper that records all calls made to it. */
-export interface Spy<T> {
+
+export interface Spy<
+  T,
   // deno-lint-ignore no-explicit-any
-  (this: T | void, ...args: any[]): any;
+  TArgs extends any[] = any[],
+  // deno-lint-ignore no-explicit-any
+  TReturn extends any = any,
+> {
+  (this: T | void, ...args: TArgs): TReturn;
   /**
    * Information about calls made to the function or instance method or getter/setter being spied on.
    */
@@ -79,8 +85,9 @@ export interface Spy<T> {
 export type AnySpy<T> = Spy<T> | Spy<void>;
 export type AnySpyInternal<T> = SpyMixin<T> | SpyMixin<void>;
 function spy(): Spy<void>;
-// deno-lint-ignore no-explicit-any
-function spy(func: (...args: any[]) => unknown): Spy<void>;
+function spy<TArgs extends unknown[], TReturn extends unknown>(
+  func: (...args: TArgs) => TReturn,
+): Spy<void, TArgs, TReturn>;
 function spy<T>(obj: T, property: string | number | symbol): Spy<T>;
 function spy<T>(
   // deno-lint-ignore no-explicit-any
