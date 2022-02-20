@@ -3,7 +3,7 @@
 [![release](https://img.shields.io/badge/release-0.13.0-success)](https://github.com/udibo/mock/releases/tag/0.13.0)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.13.0/mod.ts)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/udibo/mock/branch/master/graph/badge.svg?token=TXORMSEHM7)](https://codecov.io/gh/udibo/mock)
+[![codecov](https://codecov.io/gh/udibo/mock/branch/main/graph/badge.svg?token=TXORMSEHM7)](https://codecov.io/gh/udibo/mock)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
 
 Utilities to help mock behavior, spy on function calls, stub methods and fake
