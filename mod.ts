@@ -33,6 +33,7 @@ export {
   assertSpyCallsMin,
 } from "./asserts.ts";
 export type {
+  ExpectedSpyCall,
   PassthroughOptions,
   PassthroughOptionsFunc,
   PassthroughOptionsInstance,
