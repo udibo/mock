@@ -6,8 +6,8 @@ import {
   assertStrictEquals,
 } from "./deps.ts";
 import { FakeDate, FakeTime, NativeDate } from "./time.ts";
-import { Spy, spy, SpyCall } from "./spy.ts";
-import { assertPassthrough } from "./asserts.ts";
+import { MockError, spy, SpyCall, stub } from "./mock.ts";
+import { assertSpyCall, assertSpyCalls } from "./asserts.ts";
 
 function fromNow(): () => number {
   const start: number = Date.now();
@@ -45,7 +45,7 @@ Deno.test("Date is FakeDate if FakeTime is initialized", () => {
 
 Deno.test("FakeDate.now uses Date.now if FakeTime is uninitialized", () => {
   FakeTime.restore();
-  const now: Spy<DateConstructor> = spy(NativeDate, "now");
+  const now = spy(NativeDate, "now");
   try {
     const result = FakeDate.now();
     assertEquals(now.calls.length, 1);
@@ -59,7 +59,7 @@ Deno.test("FakeDate.now uses Date.now if FakeTime is uninitialized", () => {
 
 Deno.test("FakeDate.now returns current fake time if FakeTime initialized", () => {
   const time: FakeTime = new FakeTime(9001);
-  const now: Spy<DateConstructor> = spy(NativeDate, "now");
+  const now = spy(NativeDate, "now");
   try {
     assertEquals(FakeDate.now(), 9001);
     assertEquals(now.calls.length, 0);
@@ -76,24 +76,38 @@ Deno.test("FakeDate instance methods passthrough to Date instance methods", () =
   const now: FakeDate = new FakeDate("2020-05-25T05:00:00.12345Z");
   assertEquals(now.toISOString(), "2020-05-25T05:00:00.123Z");
   Object.getOwnPropertyNames(Date.prototype).forEach((method: string) => {
-    assertPassthrough({
-      method,
-      instance: now,
-      target: {
-        instance: now.date,
+    if (typeof Date.prototype[method as keyof Date] === "function") {
+      if (typeof now[method as keyof Date] !== "function") {
+        throw new MockError(`FakeDate missing ${method} method`);
+      }
+      const returned = Symbol();
+      const func = stub(now.date, method as keyof Date, () => returned);
+      const args = Array(5).fill(undefined).map(() => Symbol());
+      (now[method as keyof Date] as CallableFunction)(...args);
+      assertSpyCall(func, 0, {
         self: now.date,
-      },
-    });
+        args,
+        returned,
+      });
+      assertSpyCalls(func, 1);
+    }
   });
   Object.getOwnPropertySymbols(Date.prototype).forEach((method: symbol) => {
-    assertPassthrough({
-      method,
-      instance: now,
-      target: {
-        instance: now.date,
+    if (typeof Date.prototype[method as keyof Date] === "function") {
+      if (typeof now[method as keyof Date] !== "function") {
+        throw new MockError(`FakeDate missing ${method.toString()} method`);
+      }
+      const returned = Symbol();
+      const func = stub(now.date, method as keyof Date, () => returned);
+      const args = Array(5).fill(undefined).map(() => Symbol());
+      (now[method as keyof Date] as CallableFunction)(...args);
+      assertSpyCall(func, 0, {
         self: now.date,
-      },
-    });
+        args,
+        returned,
+      });
+      assertSpyCalls(func, 1);
+    }
   });
 });
 
@@ -134,7 +148,7 @@ Deno.test("FakeTime only ticks forward when setting now or calling tick", () => 
 Deno.test("FakeTime controls timeouts", () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const expected: SpyCall[] = [];
 
   try {
@@ -200,7 +214,7 @@ Deno.test("interval functions are fake if FakeTime is initialized", () => {
 
 Deno.test("FakeTime controls intervals", () => {
   const time: FakeTime = new FakeTime();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const expected: SpyCall[] = [];
   try {
     const interval: number = setInterval(cb, 1000);
@@ -226,9 +240,9 @@ Deno.test("FakeTime controls intervals", () => {
 
 Deno.test("FakeTime calls timeout and interval callbacks in correct order", () => {
   const time: FakeTime = new FakeTime();
-  const cb: Spy<void> = spy(fromNow());
-  const timeoutCb: Spy<void> = spy(cb);
-  const intervalCb: Spy<void> = spy(cb);
+  const cb = spy(fromNow());
+  const timeoutCb = spy(cb);
+  const intervalCb = spy(cb);
   const expected: SpyCall[] = [];
   const timeoutExpected: SpyCall[] = [];
   const intervalExpected: SpyCall[] = [];
@@ -373,7 +387,7 @@ Deno.test("runMicrotasks runs all microtasks before resolving", async () => {
 Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const expected: SpyCall[] = [];
   const seq: number[] = [];
 
@@ -403,7 +417,7 @@ Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", asy
 Deno.test("runNext runs next timer without running microtasks", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const seq: number[] = [];
 
   try {
@@ -436,7 +450,7 @@ Deno.test("runNext runs next timer without running microtasks", async () => {
 Deno.test("runNextAsync runs all microtasks and next timer", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const seq: number[] = [];
 
   try {
@@ -467,7 +481,7 @@ Deno.test("runNextAsync runs all microtasks and next timer", async () => {
 Deno.test("runAll runs all timers without running microtasks", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const seq: number[] = [];
 
   try {
@@ -504,7 +518,7 @@ Deno.test("runAll runs all timers without running microtasks", async () => {
 Deno.test("runAllAsync runs all microtasks and timers", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
-  const cb: Spy<void> = spy(fromNow());
+  const cb = spy(fromNow());
   const seq: number[] = [];
 
   try {

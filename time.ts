@@ -1,6 +1,6 @@
 /** This module is browser compatible. */
 
-import { applyMixins, ascend, DelayOptions, RBTree } from "./deps.ts";
+import { applyMixins, ascend, DelayOptions, RBTree } from "./time_deps.ts";
 
 export type NativeDate = Date;
 export type NativeDateConstructor = DateConstructor;

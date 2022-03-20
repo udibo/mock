@@ -1,10 +1,7 @@
 /** This module is browser compatible. */
 
-export { spy, SpyError } from "./spy.ts";
-export type { Spy, SpyCall } from "./spy.ts";
-
-export { stub } from "./stub.ts";
-export type { Stub } from "./stub.ts";
+export { MockError, spy, stub } from "./mock.ts";
+export type { Spy, SpyCall, Stub } from "./mock.ts";
 
 export {
   FakeDate,
@@ -24,18 +21,10 @@ export {
 } from "./callbacks.ts";
 
 export {
-  assertPassthrough,
   assertSpyCall,
   assertSpyCallArg,
   assertSpyCallArgs,
   assertSpyCallAsync,
   assertSpyCalls,
-  assertSpyCallsMin,
 } from "./asserts.ts";
-export type {
-  ExpectedSpyCall,
-  PassthroughOptions,
-  PassthroughOptionsFunc,
-  PassthroughOptionsInstance,
-  PassthroughTarget,
-} from "./asserts.ts";
+export type { ExpectedSpyCall } from "./asserts.ts";

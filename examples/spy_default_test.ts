@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps.ts";
-import { assertSpyCall, Spy, spy } from "../mod.ts";
+import { assertSpyCall, spy } from "../mod.ts";
 
 function add(
   a: number,
@@ -11,8 +11,8 @@ function add(
   else callback(new Error("invalid input"));
 }
 
-Deno.test("calls fake callback", () => {
-  const callback: Spy<void> = spy();
+Deno.test("add calls fake callback", () => {
+  const callback = spy();
 
   assertEquals(add(2, 3, callback), undefined);
   assertSpyCall(callback, 0, { args: [undefined, 5] });

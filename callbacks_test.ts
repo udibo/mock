@@ -1,4 +1,5 @@
-import { assertEquals, delay } from "./deps.ts";
+import { assertEquals, assertRejects, assertThrows } from "./deps.ts";
+import { delay } from "./test_deps.ts";
 import {
   resolvesNext,
   returnsArg,
@@ -6,6 +7,7 @@ import {
   returnsNext,
   returnsThis,
 } from "./callbacks.ts";
+import { MockError } from "./mock.ts";
 
 Deno.test("returnsThis", () => {
   const callback = returnsThis();
@@ -46,119 +48,248 @@ Deno.test("returnsArgs", () => {
 });
 
 Deno.test("returnsNext with array", () => {
-  let results: number[] = [1, 2, 3];
+  let results = [1, 2, new Error("oops"), 3];
   let callback = returnsNext(results);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
+  assertThrows(() => callback(), Error, "oops");
   assertEquals(callback(), 3);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 4 times",
+  );
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 4 times",
+  );
 
   results = [];
   callback = returnsNext(results);
-  results.push(1, 2, 3);
+  results.push(1, 2, new Error("oops"), 3);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
+  assertThrows(() => callback(), Error, "oops");
   assertEquals(callback(), 3);
   results.push(4);
   assertEquals(callback(), 4);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
   results.push(5);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
 });
 
 Deno.test("returnsNext with iterator", () => {
-  let results: number[] = [1, 2, 3];
+  let results = [1, 2, new Error("oops"), 3];
   let callback = returnsNext(results.values());
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
+  assertThrows(() => callback(), Error, "oops");
   assertEquals(callback(), 3);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 4 times",
+  );
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 4 times",
+  );
 
   results = [];
   callback = returnsNext(results.values());
-  results.push(1, 2, 3);
+  results.push(1, 2, new Error("oops"), 3);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
+  assertThrows(() => callback(), Error, "oops");
   assertEquals(callback(), 3);
   results.push(4);
   assertEquals(callback(), 4);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
   results.push(5);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
 });
 
 Deno.test("returnsNext with generator", () => {
-  let results: number[] = [1, 2, 3];
+  let results = [1, 2, new Error("oops"), 3];
   const generator = function* () {
     yield* results;
   };
   let callback = returnsNext(generator());
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
+  assertThrows(() => callback(), Error, "oops");
   assertEquals(callback(), 3);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 4 times",
+  );
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 4 times",
+  );
 
   results = [];
   callback = returnsNext(generator());
-  results.push(1, 2, 3);
+  results.push(1, 2, new Error("oops"), 3);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
+  assertThrows(() => callback(), Error, "oops");
   assertEquals(callback(), 3);
   results.push(4);
   assertEquals(callback(), 4);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
   results.push(5);
-  assertEquals(callback(), undefined);
+  assertThrows(
+    () => callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
 });
 
 Deno.test("resolvesNext with array", async () => {
-  let results: number[] = [1, 2, 3];
+  let results = [
+    1,
+    new Error("oops"),
+    Promise.resolve(2),
+    Promise.resolve(new Error("oops")),
+    3,
+  ];
   let callback = resolvesNext(results);
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
 
   results = [];
   callback = resolvesNext(results);
-  results.push(1, 2, 3);
+  results.push(
+    1,
+    new Error("oops"),
+    Promise.resolve(2),
+    Promise.resolve(new Error("oops")),
+    3,
+  );
   assertEquals(await callback(), 1);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 6 times",
+  );
   results.push(5);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 6 times",
+  );
 });
 
 Deno.test("resolvesNext with iterator", async () => {
-  let results: number[] = [1, 2, 3];
+  let results = [
+    1,
+    new Error("oops"),
+    Promise.resolve(2),
+    Promise.resolve(new Error("oops")),
+    3,
+  ];
   let callback = resolvesNext(results.values());
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
 
   results = [];
   callback = resolvesNext(results.values());
-  results.push(1, 2, 3);
+  results.push(
+    1,
+    new Error("oops"),
+    Promise.resolve(2),
+    Promise.resolve(new Error("oops")),
+    3,
+  );
   assertEquals(await callback(), 1);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 6 times",
+  );
   results.push(5);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 6 times",
+  );
 });
 
 Deno.test("resolvesNext with async generator", async () => {
-  let results: number[] = [1, 2, 3];
+  let results = [
+    1,
+    new Error("oops"),
+    Promise.resolve(2),
+    Promise.resolve(new Error("oops")),
+    3,
+  ];
   const asyncGenerator = async function* () {
     await delay(0);
     yield* results;
@@ -167,19 +298,46 @@ Deno.test("resolvesNext with async generator", async () => {
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 5 times",
+  );
 
   results = [];
   callback = resolvesNext(asyncGenerator());
-  results.push(1, 2, 3);
+  results.push(
+    1,
+    new Error("oops"),
+    Promise.resolve(2),
+    Promise.resolve(new Error("oops")),
+    3,
+  );
   assertEquals(await callback(), 1);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
+  assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 6 times",
+  );
   results.push(5);
-  assertEquals(await callback(), undefined);
+  assertRejects(
+    async () => await callback(),
+    MockError,
+    "not expected to be called more than 6 times",
+  );
 });

@@ -1,7 +1,7 @@
 # Mock
 
-[![release](https://img.shields.io/badge/release-0.13.0-success)](https://github.com/udibo/mock/releases/tag/0.13.0)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.13.0/mod.ts)
+[![release](https://img.shields.io/badge/release-0.14.0-success)](https://github.com/udibo/mock/releases/tag/0.14.0)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.14.0/mod.ts)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/udibo/mock/branch/main/graph/badge.svg?token=TXORMSEHM7)](https://codecov.io/gh/udibo/mock)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
@@ -30,9 +30,9 @@ imported directly from GitHub using raw content URLs.
 
 ```ts
 // Import from Deno's third party module registry
-import { spy, Spy } from "https://deno.land/x/mock@0.13.0/mod.ts";
+import { spy, stub } from "https://deno.land/x/mock@0.14.0/mod.ts";
 // Import from GitHub
-import { spy, Spy } "https://raw.githubusercontent.com/udibo/mock/0.13.0/mod.ts";
+import { spy, stub } "https://raw.githubusercontent.com/udibo/mock/0.14.0/mod.ts";
 ```
 
 If you do not need all of the sub-modules, you can choose to just import the
@@ -40,26 +40,26 @@ sub-modules you need.
 
 ```ts
 // Import from Deno's third party module registry
-import { Spy, spy } from "https://deno.land/x/mock@0.13.0/spy.ts";
+import { spy, stub } from "https://deno.land/x/mock@0.14.0/mock.ts";
 // Import from GitHub
 import {
-  Spy,
   spy,
-} from "https://raw.githubusercontent.com/udibo/mock/0.13.0/spy.ts";
+  stub,
+} from "https://raw.githubusercontent.com/udibo/mock/0.14.0/mock.ts";
 ```
 
 #### Sub-modules
 
-`spy.ts` module is for spying on functions and instance methods without changing
-behavior.
-
-`stub.ts` module is for spying on instance methods and faking how they respond
-to calls.
+`mock.ts` module is for spying on functions and instance methods with or without
+changing behavior.
 
 `time.ts` module is for controlling the Date object and timers.
 
 `callbacks.ts` module contains a set of functions you may want to use when
 stubbing instance methods.
+
+`asserts.ts` module contains a set of functions for making assertions about
+calls to spys and stubs.
 
 ### Node.js
 
@@ -69,7 +69,7 @@ If a Node.js package has the type "module" specified in its package.json file,
 the JavaScript bundle can be imported as a `.js` file.
 
 ```js
-import { Spy, spy } from "./mock_0.13.0.js";
+import { spy, stub } from "./mock_0.14.0.js";
 ```
 
 The default type for Node.js packages is "commonjs". To import the bundle into a
@@ -77,7 +77,7 @@ commonjs package, the file extension of the JavaScript bundle must be changed
 from `.js` to `.mjs`.
 
 ```js
-import { Spy, spy } from "./mock_0.13.0.mjs";
+import { spy, stub } from "./mock_0.14.0.mjs";
 ```
 
 See [Node.js Documentation](https://nodejs.org/api/esm.html) for more
@@ -96,7 +96,7 @@ modules must have the type attribute set to "module".
 
 ```js
 // main.js
-import { Spy, spy } from "./mock_0.13.0.js";
+import { spy, stub } from "./mock_0.14.0.js";
 ```
 
 You can also embed a module script directly into an HTML file by placing the
@@ -104,7 +104,7 @@ JavaScript code within the body of the script tag.
 
 ```html
 <script type="module">
-  import { spy, Spy } from "./mock_0.13.0.js";
+  import { spy, stub } from "./mock_0.14.0.js";
 </script>
 ```
 
@@ -120,7 +120,7 @@ a try block then restore the function in a finally block to ensure the original
 instance method is restored before continuing to other tests. The same applies
 when using fake time.
 
-See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.13.0/mod.ts) for
+See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.14.0/mod.ts) for
 more information.
 
 ### Spy
@@ -135,12 +135,8 @@ anything, you can create an empty spy. An empty spy will just return undefined
 for any calls made to it.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
-import {
-  assertSpyCall,
-  Spy,
-  spy,
-} from "https://deno.land/x/mock@0.13.0/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.130.0/testing/asserts.ts";
+import { assertSpyCall, spy } from "https://deno.land/x/mock@0.14.0/mod.ts";
 
 function add(
   a: number,
@@ -152,11 +148,11 @@ function add(
   else callback(new Error("invalid input"));
 }
 
-Deno.test("calls fake callback", () => {
-  const callback: Spy<void> = spy();
+Deno.test("add calls fake callback", () => {
+  const callback = spy();
 
   assertEquals(add(2, 3, callback), undefined);
-  assertSpyCall(callback, 1, { args: [undefined, 5] });
+  assertSpyCall(callback, 0, { args: [undefined, 5] });
   assertEquals(add(5, 4, callback), undefined);
   assertSpyCall(callback, 1, { args: [undefined, 9] });
 });
@@ -166,13 +162,12 @@ If you have a function that takes a callback that needs to still behave
 normally, you can wrap it with a spy.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.130.0/testing/asserts.ts";
 import {
   assertSpyCall,
   assertSpyCalls,
-  Spy,
   spy,
-} from "https://deno.land/x/mock@0.13.0/mod.ts";
+} from "https://deno.land/x/mock@0.14.0/mod.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
   return values.filter(callback);
@@ -182,8 +177,8 @@ function isEven(value: number): boolean {
   return value % 2 === 0;
 }
 
-Deno.test("calls real callback", () => {
-  const callback: Spy<void> = spy(isEven);
+Deno.test("filter calls real callback", () => {
+  const callback = spy(isEven);
   const values: number[] = [5, 6, 7, 8];
 
   assertEquals(filter(values, callback), [6, 8]);
@@ -202,13 +197,12 @@ method. If it is not restored and you attempt to wrap it again, it will throw a
 spy error saying "already spying on function".
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.130.0/testing/asserts.ts";
 import {
   assertSpyCall,
   assertSpyCalls,
-  Spy,
   spy,
-} from "https://deno.land/x/mock@0.13.0/mod.ts";
+} from "https://deno.land/x/mock@0.14.0/mod.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
@@ -251,38 +245,34 @@ function getNamesByLastName(db: Database, lastName: string): string[] {
 }
 
 Deno.test("functions call db.query", () => {
-  const db: Database = new Database();
-  const query: Spy<Database> = spy(db, "query");
+  const db = new Database();
+  const query = spy(db, "query");
 
-  try {
-    assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
-    assertSpyCall(query, 0, {
-      args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
-      self: db,
-      returned: [[1, "Doe"], [3, "Smith"]],
-    });
-    assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
-    assertSpyCall(query, 1, {
-      args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
-      self: db,
-      returned: [[1, "Jane"], [2, "John"]],
-    });
-    assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
-    assertSpyCall(query, 2, {
-      args: ["select id, last_name from USERS where first_name=?", ["John"]],
-      self: db,
-      returned: [[2, "Doe"]],
-    });
-    assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
-    assertSpyCall(query, 3, {
-      args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
-      self: db,
-      returned: [[3, "Jane"]],
-    });
-    assertSpyCalls(query, 4);
-  } finally {
-    query.restore();
-  }
+  assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
+  assertSpyCall(query, 0, {
+    args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
+    self: db,
+    returned: [[1, "Doe"], [3, "Smith"]],
+  });
+  assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
+  assertSpyCall(query, 1, {
+    args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
+    self: db,
+    returned: [[1, "Jane"], [2, "John"]],
+  });
+  assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
+  assertSpyCall(query, 2, {
+    args: ["select id, last_name from USERS where first_name=?", ["John"]],
+    self: db,
+    returned: [[2, "Doe"]],
+  });
+  assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
+  assertSpyCall(query, 3, {
+    args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
+    self: db,
+    returned: [[3, "Jane"]],
+  });
+  assertSpyCalls(query, 4);
 });
 ```
 
@@ -298,8 +288,12 @@ you can create an empty stub. An empty stub will just return undefined for any
 calls made to it.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
-import { Stub, stub } from "https://deno.land/x/mock@0.13.0/stub.ts";
+import { assertEquals } from "https://deno.land/std@0.130.0/testing/asserts.ts";
+import {
+  assertSpyCall,
+  assertSpyCalls,
+  stub,
+} from "https://deno.land/x/mock@0.14.0/mod.ts";
 
 class Cat {
   action(name: string): any {
@@ -312,15 +306,24 @@ function doAction(cat: Cat, action: string): any {
 }
 
 Deno.test("doAction", () => {
-  const cat: Cat = new Cat();
-  const action: Stub<Cat> = stub(cat, "action");
+  const cat = new Cat();
+  const action = stub(cat, "action");
 
-  try {
-    assertEquals(doAction(cat, "walk"), undefined);
-    assertEquals(doAction(cat, "jump"), undefined);
-  } finally {
-    action.restore();
-  }
+  assertEquals(doAction(cat, "walk"), undefined);
+  assertSpyCall(action, 0, {
+    self: cat,
+    args: ["walk"],
+    returned: undefined,
+  });
+
+  assertEquals(doAction(cat, "jump"), undefined);
+  assertSpyCall(action, 1, {
+    self: cat,
+    args: ["jump"],
+    returned: undefined,
+  });
+
+  assertSpyCalls(action, 2);
 });
 ```
 
@@ -336,14 +339,13 @@ considered complete if called after all values have been returned. The callback
 will return undefined to each call after the iterator is done.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.120.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.130.0/testing/asserts.ts";
 import {
   assertSpyCallAsync,
   assertSpyCalls,
   resolvesNext,
-  Stub,
   stub,
-} from "https://deno.land/x/mock@0.13.0/mod.ts";
+} from "https://deno.land/x/mock@0.14.0/mod.ts";
 
 class Database {
   query(_query: string, _params: unknown[]): Promise<unknown[][]> {
@@ -366,12 +368,12 @@ async function getUsers(
 }
 
 Deno.test("getUsers", async () => {
-  const db: Database = new Database();
+  const db = new Database();
   const resolves: [number, string][][] = [
     [[1, "jd"], [2, "johnd"], [3, "janedoe"]],
     [[2, "johnd"]],
   ];
-  const query: Stub<Database> = stub(db, "query", resolvesNext(resolves));
+  const query = stub(db, "query", resolvesNext(resolves));
 
   try {
     assertEquals(await getUsers(db, "doe"), ["1 jd", "2 johnd", "3 janedoe"]);
@@ -420,15 +422,20 @@ Overrides the real Date object and timer functions with fake ones that can be
 controlled through the fake time instance.
 
 ```ts
-import { FakeTime, Spy, spy } from "https://deno.land/x/mock@0.13.0/mod.ts";
+import {
+  assertSpyCalls,
+  FakeTime,
+  Spy,
+  spy,
+} from "https://deno.land/x/mock@0.14.0/mod.ts";
 
 function secondInterval(cb: () => void): void {
   setInterval(cb, 1000);
 }
 
-Deno.test("calls callback every second", () => {
-  const time: FakeTime = new FakeTime();
-  const cb: Spy<void> = spy();
+Deno.test("secondInterval calls callback every second", () => {
+  const time = new FakeTime();
+  const cb = spy();
 
   try {
     secondInterval(cb);

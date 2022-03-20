@@ -3,7 +3,6 @@ import {
   assertSpyCallAsync,
   assertSpyCalls,
   resolvesNext,
-  Stub,
   stub,
 } from "../mod.ts";
 
@@ -28,12 +27,12 @@ async function getUsers(
 }
 
 Deno.test("getUsers", async () => {
-  const db: Database = new Database();
+  const db = new Database();
   const resolves: [number, string][][] = [
     [[1, "jd"], [2, "johnd"], [3, "janedoe"]],
     [[2, "johnd"]],
   ];
-  const query: Stub<Database> = stub(db, "query", resolvesNext(resolves));
+  const query = stub(db, "query", resolvesNext(resolves));
 
   try {
     assertEquals(await getUsers(db, "doe"), ["1 jd", "2 johnd", "3 janedoe"]);

@@ -1,12 +1,12 @@
-import { assertSpyCalls, FakeTime, Spy, spy } from "../mod.ts";
+import { assertSpyCalls, FakeTime, spy } from "../mod.ts";
 
 function secondInterval(cb: () => void): void {
   setInterval(cb, 1000);
 }
 
-Deno.test("calls callback every second", () => {
+Deno.test("secondInterval calls callback every second", () => {
   const time: FakeTime = new FakeTime();
-  const cb: Spy<void> = spy();
+  const cb = spy();
 
   try {
     secondInterval(cb);

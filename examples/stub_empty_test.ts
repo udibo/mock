@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps.ts";
-import { Stub, stub } from "../stub.ts";
+import { assertSpyCall, assertSpyCalls, stub } from "../mod.ts";
 
 class Cat {
   // deno-lint-ignore no-explicit-any
@@ -14,13 +14,22 @@ function doAction(cat: Cat, action: string): any {
 }
 
 Deno.test("doAction", () => {
-  const cat: Cat = new Cat();
-  const action: Stub<Cat> = stub(cat, "action");
+  const cat = new Cat();
+  const action = stub(cat, "action");
 
-  try {
-    assertEquals(doAction(cat, "walk"), undefined);
-    assertEquals(doAction(cat, "jump"), undefined);
-  } finally {
-    action.restore();
-  }
+  assertEquals(doAction(cat, "walk"), undefined);
+  assertSpyCall(action, 0, {
+    self: cat,
+    args: ["walk"],
+    returned: undefined,
+  });
+
+  assertEquals(doAction(cat, "jump"), undefined);
+  assertSpyCall(action, 1, {
+    self: cat,
+    args: ["jump"],
+    returned: undefined,
+  });
+
+  assertSpyCalls(action, 2);
 });

@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps.ts";
-import { assertSpyCall, assertSpyCalls, Spy, spy } from "../mod.ts";
+import { assertSpyCall, assertSpyCalls, spy } from "../mod.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): T[] {
   return values.filter(callback);
@@ -9,8 +9,8 @@ function isEven(value: number): boolean {
   return value % 2 === 0;
 }
 
-Deno.test("calls real callback", () => {
-  const callback: Spy<void> = spy(isEven);
+Deno.test("filter calls real callback", () => {
+  const callback = spy(isEven);
   const values: number[] = [5, 6, 7, 8];
 
   assertEquals(filter(values, callback), [6, 8]);
