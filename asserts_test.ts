@@ -213,7 +213,7 @@ Deno.test("assertSpyCall method", () => {
   assertThrows(
     () =>
       assertSpyCall(spyMethod, 1, {
-        self: new Point(2, 3),
+        self: new Point(1, 2),
       }),
     AssertionError,
     "spy not called as method on expected self",
@@ -591,7 +591,7 @@ Deno.test("assertSpyCallAsync method", async () => {
   await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
-        self: new Point(2, 3),
+        self: new Point(1, 2),
       }),
     AssertionError,
     "spy not called as method on expected self",

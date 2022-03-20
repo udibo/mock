@@ -5,7 +5,6 @@ import {
   AssertionError,
   assertIsError,
   assertRejects,
-  assertStrictEquals,
 } from "./deps.ts";
 import { Spy, SpyCall } from "./mock.ts";
 
@@ -89,7 +88,7 @@ export function assertSpyCall<
 
     if ("self" in expected) {
       try {
-        assertStrictEquals(call.self, expected.self);
+        assertEquals(call.self, expected.self);
       } catch (e) {
         let message = expected.self
           ? "spy not called as method on expected self:\n"

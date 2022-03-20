@@ -7,7 +7,7 @@ import {
 } from "./deps.ts";
 import { FakeDate, FakeTime, NativeDate } from "./time.ts";
 import { MockError, spy, SpyCall, stub } from "./mock.ts";
-import { assertSpyCall, assertSpyCalls } from "./asserts.ts";
+import { assertSpyCall } from "./asserts.ts";
 
 function fromNow(): () => number {
   const start: number = Date.now();
@@ -87,7 +87,6 @@ Deno.test("FakeDate instance methods passthrough to Date instance methods", () =
         args,
         returned,
       });
-      assertSpyCalls(func, 1);
     }
   });
   Object.getOwnPropertySymbols(Date.prototype).forEach((method: symbol) => {
@@ -104,7 +103,6 @@ Deno.test("FakeDate instance methods passthrough to Date instance methods", () =
         args,
         returned,
       });
-      assertSpyCalls(func, 1);
     }
   });
 });
