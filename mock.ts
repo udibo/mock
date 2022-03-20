@@ -10,9 +10,12 @@ export class MockError extends Error {
 
 /** Call information recorded by a spy. */
 export interface SpyCall<
-  Self = unknown,
-  Args extends unknown[] = unknown[],
-  Return = unknown,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
 > {
   /** Arguments passed to a function when called. */
   args: Args;
@@ -26,9 +29,12 @@ export interface SpyCall<
 
 /** A function or instance method wrapper that records all calls made to it. */
 export interface Spy<
-  Self,
-  Args extends unknown[],
-  Return,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
 > {
   (this: Self, ...args: Args): Return;
   /** The function that is being spied on. */
@@ -43,8 +49,10 @@ export interface Spy<
 
 /** Wraps a function with a Spy. */
 function functionSpy<
-  Self = unknown,
-  Args extends unknown[] = unknown[],
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
   Return = undefined,
 >(): Spy<Self, Args, Return>;
 function functionSpy<
@@ -275,9 +283,11 @@ function methodSpy<
 
 /** Wraps a function or instance method with a Spy. */
 export function spy<
-  Self = unknown,
-  Args extends unknown[] = unknown[],
-  Return = unknown,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  Return = undefined,
 >(): Spy<Self, Args, Return>;
 export function spy<
   Self,
@@ -309,9 +319,12 @@ export function spy<
 
 /** An instance method replacement that records all calls made to it. */
 export interface Stub<
-  Self,
-  Args extends unknown[],
-  Return,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
 > extends Spy<Self, Args, Return> {
   /** The function that is used instead of the original. */
   fake: (this: Self, ...args: Args) => Return;
@@ -320,7 +333,8 @@ export interface Stub<
 /** Replaces an instance method with a Stub. */
 export function stub<
   Self,
-  Args extends unknown[] = unknown[],
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
   Return = undefined,
 >(self: Self, property: keyof Self): Stub<Self, Args, Return>;
 export function stub<

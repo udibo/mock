@@ -33,9 +33,12 @@ export function assertSpyCalls<
 
 /** Call information recorded by a spy. */
 export interface ExpectedSpyCall<
-  Self = unknown,
-  Args extends unknown[] = unknown[],
-  Return = unknown,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
 > {
   /** Arguments passed to a function when called. */
   args?: [...Args, ...unknown[]];

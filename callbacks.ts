@@ -4,8 +4,10 @@ import { MockError } from "./mock.ts";
 
 /** Creates a function that returns the instance the method was called on. */
 export function returnsThis<
-  Self = unknown,
-  Args extends unknown[] = unknown[],
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
 >(): (this: Self, ...args: Args) => Self {
   return function (this: Self): Self {
     return this;
@@ -13,7 +15,8 @@ export function returnsThis<
 }
 
 /** Creates a function that returns one of its arguments. */
-export function returnsArg<Arg, Self = unknown>(
+// deno-lint-ignore no-explicit-any
+export function returnsArg<Arg, Self = any>(
   idx: number,
 ): (this: Self, ...args: Arg[]) => Arg {
   return function (...args: Arg[]): Arg {
@@ -24,7 +27,8 @@ export function returnsArg<Arg, Self = unknown>(
 /** Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end. */
 export function returnsArgs<
   Args extends unknown[],
-  Self = unknown,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
 >(
   start = 0,
   end?: number,
@@ -37,8 +41,10 @@ export function returnsArgs<
 /** Creates a function that returns the iterable values. Any iterable values that are errors will be thrown. */
 export function returnsNext<
   Return,
-  Self = unknown,
-  Args extends unknown[] = unknown[],
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
 >(
   values: Iterable<Return | Error>,
 ): (this: Self, ...args: Args) => Return {
@@ -61,8 +67,10 @@ export function returnsNext<
 /** Creates a function that resolves the awaited iterable values. Any awaited iterable values that are errors will be thrown. */
 export function resolvesNext<
   Return,
-  Self = unknown,
-  Args extends unknown[] = unknown[],
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
 >(
   iterable:
     | Iterable<Return | Error | Promise<Return | Error>>
