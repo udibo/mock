@@ -107,6 +107,94 @@ function isSpy<Self, Args extends unknown[], Return>(
     Array.isArray(spy.calls);
 }
 
+// deno-lint-ignore no-explicit-any
+const sessions: Set<Spy<any, any[], any>>[] = [];
+// deno-lint-ignore no-explicit-any
+function getSession(): Set<Spy<any, any[], any>> {
+  if (sessions.length === 0) sessions.push(new Set());
+  return sessions[sessions.length - 1];
+}
+// deno-lint-ignore no-explicit-any
+function registerMock(spy: Spy<any, any[], any>): void {
+  const session = getSession();
+  session.add(spy);
+}
+// deno-lint-ignore no-explicit-any
+function unregisterMock(spy: Spy<any, any[], any>): void {
+  const session = getSession();
+  session.delete(spy);
+}
+
+/**
+ * Creates a session that tracks all mocks created before it's restored.
+ * If a callback is provided, it restores all mocks created within it.
+ */
+export function mockSession(): number;
+export function mockSession<
+  Self,
+  Args extends unknown[],
+  Return,
+>(
+  func: (this: Self, ...args: Args) => Return,
+): (this: Self, ...args: Args) => Return;
+export function mockSession<
+  Self,
+  Args extends unknown[],
+  Return,
+>(
+  func?: (this: Self, ...args: Args) => Return,
+): number | ((this: Self, ...args: Args) => Return) {
+  if (func) {
+    return function (this: Self, ...args: Args): Return {
+      const id = sessions.length;
+      sessions.push(new Set());
+      try {
+        return func.apply(this, args);
+      } finally {
+        restore(id);
+      }
+    };
+  } else {
+    sessions.push(new Set());
+    return sessions.length - 1;
+  }
+}
+
+/** Creates an async session that tracks all mocks created before the promise resolves. */
+export function mockSessionAsync<
+  Self,
+  Args extends unknown[],
+  Return,
+>(
+  func: (this: Self, ...args: Args) => Promise<Return>,
+): (this: Self, ...args: Args) => Promise<Return> {
+  return async function (this: Self, ...args: Args): Promise<Return> {
+    const id = sessions.length;
+    sessions.push(new Set());
+    try {
+      return await func.apply(this, args);
+    } finally {
+      restore(id);
+    }
+  };
+}
+
+/**
+ * Restores all mocks registered in the current session that have not already been restored.
+ * If an id is provided, it will restore all mocks registered in the session associed with that id that have not already been restored.
+ */
+export function restore(id?: number): void {
+  id ??= (sessions.length || 1) - 1;
+  while (id < sessions.length) {
+    const session = sessions.pop();
+    if (session) {
+      for (const value of session) {
+        value.restore();
+      }
+    }
+  }
+}
+
 /** Wraps an instance method with a Spy. */
 function methodSpy<
   Self,
@@ -169,6 +257,7 @@ function methodSpy<
           delete self[property];
         }
         restored = true;
+        unregisterMock(spy);
       },
     },
   });
@@ -180,6 +269,7 @@ function methodSpy<
     value: spy,
   });
 
+  registerMock(spy);
   return spy;
 }
 
@@ -207,13 +297,14 @@ export function spy<
   funcOrSelf?: ((this: Self, ...args: Args) => Return) | Self,
   property?: keyof Self,
 ): Spy<Self, Args, Return> {
-  return typeof property !== "undefined"
+  const spy = typeof property !== "undefined"
     ? methodSpy<Self, Args, Return>(funcOrSelf as Self, property)
     : typeof funcOrSelf === "function"
     ? functionSpy<Self, Args, Return>(
       funcOrSelf as (this: Self, ...args: Args) => Return,
     )
     : functionSpy<Self, Args, Return>();
+  return spy;
 }
 
 // Create Stub interface that extends Spy to have fake
@@ -312,6 +403,7 @@ export function stub<
           delete self[property];
         }
         restored = true;
+        unregisterMock(stub);
       },
     },
   });
@@ -323,5 +415,6 @@ export function stub<
     value: stub,
   });
 
+  registerMock(stub);
   return stub;
 }
