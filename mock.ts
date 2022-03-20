@@ -307,7 +307,7 @@ export function spy<
   return spy;
 }
 
-// Create Stub interface that extends Spy to have fake
+/** An instance method replacement that records all calls made to it. */
 export interface Stub<
   Self,
   Args extends unknown[],
