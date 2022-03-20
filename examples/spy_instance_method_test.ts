@@ -1,5 +1,5 @@
 import { assertEquals } from "../deps.ts";
-import { assertSpyCall, assertSpyCalls, Spy, spy } from "../mod.ts";
+import { assertSpyCall, assertSpyCalls, spy } from "../mod.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
@@ -42,36 +42,32 @@ function getNamesByLastName(db: Database, lastName: string): string[] {
 }
 
 Deno.test("functions call db.query", () => {
-  const db: Database = new Database();
-  const query: Spy<Database> = spy(db, "query");
+  const db = new Database();
+  const query = spy(db, "query");
 
-  try {
-    assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
-    assertSpyCall(query, 0, {
-      args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
-      self: db,
-      returned: [[1, "Doe"], [3, "Smith"]],
-    });
-    assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
-    assertSpyCall(query, 1, {
-      args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
-      self: db,
-      returned: [[1, "Jane"], [2, "John"]],
-    });
-    assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
-    assertSpyCall(query, 2, {
-      args: ["select id, last_name from USERS where first_name=?", ["John"]],
-      self: db,
-      returned: [[2, "Doe"]],
-    });
-    assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
-    assertSpyCall(query, 3, {
-      args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
-      self: db,
-      returned: [[3, "Jane"]],
-    });
-    assertSpyCalls(query, 4);
-  } finally {
-    query.restore();
-  }
+  assertEquals(getNamesByFirstName(db, "Jane"), ["Jane Doe", "Jane Smith"]);
+  assertSpyCall(query, 0, {
+    args: ["select id, last_name from USERS where first_name=?", ["Jane"]],
+    self: db,
+    returned: [[1, "Doe"], [3, "Smith"]],
+  });
+  assertEquals(getNamesByLastName(db, "Doe"), ["Jane Doe", "John Doe"]);
+  assertSpyCall(query, 1, {
+    args: ["select id, first_name from USERS where last_name=?", ["Doe"]],
+    self: db,
+    returned: [[1, "Jane"], [2, "John"]],
+  });
+  assertEquals(getNamesByFirstName(db, "John"), ["John Doe"]);
+  assertSpyCall(query, 2, {
+    args: ["select id, last_name from USERS where first_name=?", ["John"]],
+    self: db,
+    returned: [[2, "Doe"]],
+  });
+  assertEquals(getNamesByLastName(db, "Smith"), ["Jane Smith"]);
+  assertSpyCall(query, 3, {
+    args: ["select id, first_name from USERS where last_name=?", ["Smith"]],
+    self: db,
+    returned: [[3, "Jane"]],
+  });
+  assertSpyCalls(query, 4);
 });

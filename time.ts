@@ -1,6 +1,6 @@
 /** This module is browser compatible. */
 
-import { applyMixins, ascend, DelayOptions, RBTree, Vector } from "./deps.ts";
+import { applyMixins, ascend, DelayOptions, RBTree } from "./time_deps.ts";
 
 export type NativeDate = Date;
 export type NativeDateConstructor = DateConstructor;
@@ -165,7 +165,7 @@ export interface FakeTimeOptions {
 
 interface DueNode {
   due: number;
-  timers: Vector<Timer>;
+  timers: Timer[];
 }
 
 let time: FakeTime | undefined = undefined;
@@ -204,7 +204,7 @@ export class FakeTime {
     this.timerId = timerId();
     this.dueNodes = new Map();
     this.dueTree = new RBTree(
-      (a: Partial<DueNode>, b: Partial<DueNode>) => ascend(a.due, b.due),
+      (a: DueNode, b: DueNode) => ascend(a.due, b.due),
     );
 
     this.overrideGlobals();
@@ -293,9 +293,9 @@ export class FakeTime {
     const id: number = this.timerId.next().value;
     delay = Math.max(repeat ? 1 : 0, Math.floor(delay));
     const due: number = this.now + delay;
-    let dueNode: DueNode | null = this.dueTree.find({ due });
+    let dueNode: DueNode | null = this.dueTree.find({ due } as DueNode);
     if (dueNode === null) {
-      dueNode = { due, timers: new Vector() };
+      dueNode = { due, timers: [] };
       this.dueTree.insert(dueNode);
     }
     dueNode.timers.push({
@@ -347,9 +347,9 @@ export class FakeTime {
         this._now = timer.due;
         if (timer.repeat) {
           const due: number = timer.due + timer.delay;
-          let dueNode: DueNode | null = this.dueTree.find({ due });
+          let dueNode: DueNode | null = this.dueTree.find({ due } as DueNode);
           if (dueNode === null) {
-            dueNode = { due, timers: new Vector() };
+            dueNode = { due, timers: [] };
             this.dueTree.insert(dueNode);
           }
           dueNode.timers.push({ ...timer, due });

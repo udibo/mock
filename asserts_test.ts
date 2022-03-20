@@ -1,228 +1,16 @@
 import { AssertionError, assertRejects, assertThrows } from "./deps.ts";
 import {
-  assertPassthrough,
   assertSpyCall,
   assertSpyCallArg,
   assertSpyCallArgs,
   assertSpyCallAsync,
   assertSpyCalls,
-  assertSpyCallsMin,
-  PassthroughOptions,
 } from "./asserts.ts";
 import { Point } from "./test_shared.ts";
-import { Spy, spy } from "./spy.ts";
-import { Stub, stub } from "./stub.ts";
-
-Deno.test("assertPassthrough function", () => {
-  const point: Point = new Point(2, 3);
-  const point2: Point = new Point(3, 4);
-  const callToString: (point: Point) => string = (point: Point) => {
-    return point.toString();
-  };
-
-  assertPassthrough({
-    func: callToString,
-    args: [point],
-    returned: "6, 7",
-    target: {
-      instance: point,
-      method: "toString",
-      self: point,
-      args: [],
-      returned: "6, 7",
-    },
-  });
-  assertThrows(
-    () =>
-      assertPassthrough({
-        func: callToString,
-        args: [point],
-        returned: "2, 3",
-        target: {
-          instance: point,
-          method: "toString",
-          args: [point],
-          returned: "6, 7",
-        },
-      }),
-    AssertionError,
-    "passthrough did not return expected value",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        func: callToString,
-        args: [point],
-        returned: "6, 7",
-        target: {
-          instance: point,
-          method: "toString",
-          self: point2,
-          args: [],
-          returned: "6, 7",
-        },
-      }),
-    AssertionError,
-    "target not called on expected self",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        func: callToString,
-        args: [point],
-        returned: "6, 7",
-        target: {
-          instance: point,
-          method: "toString",
-          args: [5, 6],
-          returned: "6, 7",
-        },
-      }),
-    AssertionError,
-    "target not called with expected args",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        func: callToString,
-        args: [5, 8],
-        returned: "6, 7",
-        target: {
-          instance: point,
-          method: "toString",
-          args: [point],
-          returned: "6, 7",
-        },
-      }),
-    AssertionError,
-    "passthrough did not return expected value",
-  );
-});
-
-Deno.test("assertPassthrough instance", () => {
-  const point: Point = new Point(2, 3);
-  const point2: Point = new Point(3, 4);
-  const callAction: (a: number, b: number) => number = (
-    a: number,
-    b: number,
-  ) => {
-    return 3 * point.action.call(point2, a * 2, b * 2);
-  };
-  const fakePoint: Partial<Point> = { action: callAction };
-
-  assertPassthrough({
-    instance: fakePoint,
-    method: "action",
-    args: [5, 8],
-    returned: 9,
-    target: {
-      instance: point,
-      self: point2,
-      args: [10, 16],
-      returned: 3,
-    },
-  });
-  assertThrows(
-    () =>
-      assertPassthrough({
-        instance: fakePoint,
-        method: "action",
-        args: [5, 8],
-        returned: 15,
-        target: {
-          instance: point,
-          self: point2,
-          args: [10, 16],
-          returned: 3,
-        },
-      }),
-    AssertionError,
-    "passthrough did not return expected value",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        instance: fakePoint,
-        method: "action",
-        args: [5, 8],
-        returned: 9,
-        target: {
-          instance: point,
-          self: point,
-          args: [10, 16],
-          returned: 3,
-        },
-      }),
-    AssertionError,
-    "target not called on expected self",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        instance: fakePoint,
-        method: "action",
-        args: [5, 8],
-        returned: 9,
-        target: {
-          instance: point,
-          self: point2,
-          args: [19, 16],
-          returned: 3,
-        },
-      }),
-    AssertionError,
-    "target not called with expected args",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        instance: fakePoint,
-        method: "action",
-        target: {
-          instance: point,
-          self: point2,
-        },
-      }),
-    AssertionError,
-    "passthrough did not return expected value",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        instance: fakePoint,
-        args: [5, 8],
-        returned: 9,
-        target: {
-          instance: point,
-          self: point2,
-          args: [10, 16],
-          returned: 3,
-        },
-      } as unknown as PassthroughOptions<Partial<Point>, Point>),
-    Error,
-    "target instance or passthrough must have method",
-  );
-  assertThrows(
-    () =>
-      assertPassthrough({
-        instance: fakePoint,
-        method: "invalid",
-        args: [5, 8],
-        returned: 9,
-        target: {
-          instance: point,
-          self: point2,
-          args: [10, 16],
-          returned: 3,
-        },
-      }),
-    Error,
-    "passthrough not a function",
-  );
-});
+import { spy, stub } from "./mock.ts";
 
 Deno.test("assertSpyCalls", () => {
-  const spyFunc: Spy<void> = spy();
+  const spyFunc = spy();
 
   assertSpyCalls(spyFunc, 0);
   assertThrows(
@@ -245,27 +33,8 @@ Deno.test("assertSpyCalls", () => {
   );
 });
 
-Deno.test("assertSpyCallsMin", () => {
-  const spyFunc: Spy<void> = spy();
-
-  assertSpyCallsMin(spyFunc, 0);
-  assertThrows(
-    () => assertSpyCallsMin(spyFunc, 1),
-    AssertionError,
-    "spy not called as much as expected",
-  );
-
-  spyFunc();
-  assertSpyCallsMin(spyFunc, 1);
-  assertThrows(
-    () => assertSpyCallsMin(spyFunc, 2),
-    AssertionError,
-    "spy not called as much as expected",
-  );
-});
-
 Deno.test("assertSpyCall function", () => {
-  const spyFunc: Spy<void> = spy(() => 5);
+  const spyFunc = spy((multiplier?: number) => 5 * (multiplier ?? 1));
 
   assertThrows(
     () => assertSpyCall(spyFunc, 0),
@@ -327,7 +96,7 @@ Deno.test("assertSpyCall function", () => {
   assertThrows(
     () =>
       assertSpyCall(spyFunc, 0, {
-        error: { msg: "x" },
+        error: { msgIncludes: "x" },
       }),
     AssertionError,
     "spy call did not throw an error, a value was returned.",
@@ -340,8 +109,8 @@ Deno.test("assertSpyCall function", () => {
 });
 
 Deno.test("assertSpyCall method", () => {
-  const point: Point = new Point(2, 3);
-  const spyMethod: Spy<Point> = spy(point, "action");
+  const point = new Point(2, 3);
+  const spyMethod = spy(point, "action");
 
   assertThrows(
     () => assertSpyCall(spyMethod, 0),
@@ -406,18 +175,18 @@ Deno.test("assertSpyCall method", () => {
     "spy not called as much as expected",
   );
 
-  spyMethod(9);
+  spyMethod.call(point, 9);
   assertSpyCall(spyMethod, 1);
   assertSpyCall(spyMethod, 1, {
     args: [9],
-    self: undefined,
+    self: point,
     returned: 9,
   });
   assertSpyCall(spyMethod, 1, {
     args: [9],
   });
   assertSpyCall(spyMethod, 1, {
-    self: undefined,
+    self: point,
   });
   assertSpyCall(spyMethod, 1, {
     returned: 9,
@@ -444,7 +213,7 @@ Deno.test("assertSpyCall method", () => {
   assertThrows(
     () =>
       assertSpyCall(spyMethod, 1, {
-        self: point,
+        self: new Point(2, 3),
       }),
     AssertionError,
     "spy not called as method on expected self",
@@ -460,7 +229,7 @@ Deno.test("assertSpyCall method", () => {
   assertThrows(
     () =>
       assertSpyCall(spyMethod, 1, {
-        error: { msg: "x" },
+        error: { msgIncludes: "x" },
       }),
     AssertionError,
     "spy call did not throw an error, a value was returned.",
@@ -476,7 +245,7 @@ class ExampleError extends Error {}
 class OtherError extends Error {}
 
 Deno.test("assertSpyCall error", () => {
-  const spyFunc: Spy<void> = spy(() => {
+  const spyFunc = spy((_value?: number) => {
     throw new ExampleError("failed");
   });
 
@@ -487,7 +256,7 @@ Deno.test("assertSpyCall error", () => {
     self: undefined,
     error: {
       Class: ExampleError,
-      msg: "fail",
+      msgIncludes: "fail",
     },
   });
   assertSpyCall(spyFunc, 0, {
@@ -499,13 +268,13 @@ Deno.test("assertSpyCall error", () => {
   assertSpyCall(spyFunc, 0, {
     error: {
       Class: ExampleError,
-      msg: "fail",
+      msgIncludes: "fail",
     },
   });
   assertSpyCall(spyFunc, 0, {
     error: {
       Class: Error,
-      msg: "fail",
+      msgIncludes: "fail",
     },
   });
 
@@ -516,7 +285,7 @@ Deno.test("assertSpyCall error", () => {
         self: {},
         error: {
           Class: OtherError,
-          msg: "fail",
+          msgIncludes: "fail",
         },
       }),
     AssertionError,
@@ -543,7 +312,7 @@ Deno.test("assertSpyCall error", () => {
       assertSpyCall(spyFunc, 0, {
         error: {
           Class: OtherError,
-          msg: "fail",
+          msgIncludes: "fail",
         },
       }),
     AssertionError,
@@ -554,7 +323,7 @@ Deno.test("assertSpyCall error", () => {
       assertSpyCall(spyFunc, 0, {
         error: {
           Class: OtherError,
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -565,7 +334,7 @@ Deno.test("assertSpyCall error", () => {
       assertSpyCall(spyFunc, 0, {
         error: {
           Class: ExampleError,
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -576,7 +345,7 @@ Deno.test("assertSpyCall error", () => {
       assertSpyCall(spyFunc, 0, {
         error: {
           Class: Error,
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -586,7 +355,7 @@ Deno.test("assertSpyCall error", () => {
     () =>
       assertSpyCall(spyFunc, 0, {
         error: {
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -608,7 +377,9 @@ Deno.test("assertSpyCall error", () => {
 });
 
 Deno.test("assertSpyCallAsync function", async () => {
-  const spyFunc: Spy<void> = spy(() => Promise.resolve(5));
+  const spyFunc = spy((multiplier?: number) =>
+    Promise.resolve(5 * (multiplier ?? 1))
+  );
 
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
@@ -689,10 +460,10 @@ Deno.test("assertSpyCallAsync function", async () => {
 
 Deno.test("assertSpyCallAsync method", async () => {
   const point: Point = new Point(2, 3);
-  const spyMethod: Stub<Point> = stub(
+  const spyMethod = stub(
     point,
     "action",
-    (x?: number) => Promise.resolve(x),
+    (x?: number, _y?: number) => Promise.resolve(x),
   );
 
   await assertRejects(
@@ -774,23 +545,23 @@ Deno.test("assertSpyCallAsync method", async () => {
     "spy not called as much as expected",
   );
 
-  await spyMethod(9);
+  await spyMethod.call(point, 9);
   await assertSpyCallAsync(spyMethod, 1);
   await assertSpyCallAsync(spyMethod, 1, {
     args: [9],
-    self: undefined,
+    self: point,
     returned: 9,
   });
   await assertSpyCallAsync(spyMethod, 1, {
     args: [9],
-    self: undefined,
+    self: point,
     returned: Promise.resolve(9),
   });
   await assertSpyCallAsync(spyMethod, 1, {
     args: [9],
   });
   await assertSpyCallAsync(spyMethod, 1, {
-    self: undefined,
+    self: point,
   });
   await assertSpyCallAsync(spyMethod, 1, {
     returned: 9,
@@ -820,7 +591,7 @@ Deno.test("assertSpyCallAsync method", async () => {
   await assertRejects(
     () =>
       assertSpyCallAsync(spyMethod, 1, {
-        self: point,
+        self: new Point(2, 3),
       }),
     AssertionError,
     "spy not called as method on expected self",
@@ -849,9 +620,9 @@ Deno.test("assertSpyCallAsync method", async () => {
 });
 
 Deno.test("assertSpyCallAync on sync value", async () => {
-  const spyFunc: Spy<void> = spy(() => 4);
+  const spyFunc = spy(() => 4 as unknown as Promise<number>);
 
-  await spyFunc();
+  spyFunc();
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
@@ -860,7 +631,7 @@ Deno.test("assertSpyCallAync on sync value", async () => {
 });
 
 Deno.test("assertSpyCallAync on sync error", async () => {
-  const spyFunc: Spy<void> = spy(() => {
+  const spyFunc = spy(() => {
     throw new ExampleError("failed");
   });
 
@@ -873,7 +644,7 @@ Deno.test("assertSpyCallAync on sync error", async () => {
 });
 
 Deno.test("assertSpyCallAync error", async () => {
-  const spyFunc: Spy<void> = spy(() =>
+  const spyFunc = spy((..._args: number[]): Promise<number> =>
     Promise.reject(new ExampleError("failed"))
   );
 
@@ -884,7 +655,7 @@ Deno.test("assertSpyCallAync error", async () => {
     self: undefined,
     error: {
       Class: ExampleError,
-      msg: "fail",
+      msgIncludes: "fail",
     },
   });
   await assertSpyCallAsync(spyFunc, 0, {
@@ -896,13 +667,13 @@ Deno.test("assertSpyCallAync error", async () => {
   await assertSpyCallAsync(spyFunc, 0, {
     error: {
       Class: ExampleError,
-      msg: "fail",
+      msgIncludes: "fail",
     },
   });
   await assertSpyCallAsync(spyFunc, 0, {
     error: {
       Class: Error,
-      msg: "fail",
+      msgIncludes: "fail",
     },
   });
 
@@ -913,7 +684,7 @@ Deno.test("assertSpyCallAync error", async () => {
         self: {},
         error: {
           Class: OtherError,
-          msg: "fail",
+          msgIncludes: "fail",
         },
       }),
     AssertionError,
@@ -940,7 +711,7 @@ Deno.test("assertSpyCallAync error", async () => {
       assertSpyCallAsync(spyFunc, 0, {
         error: {
           Class: OtherError,
-          msg: "fail",
+          msgIncludes: "fail",
         },
       }),
     AssertionError,
@@ -951,7 +722,7 @@ Deno.test("assertSpyCallAync error", async () => {
       assertSpyCallAsync(spyFunc, 0, {
         error: {
           Class: OtherError,
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -962,7 +733,7 @@ Deno.test("assertSpyCallAync error", async () => {
       assertSpyCallAsync(spyFunc, 0, {
         error: {
           Class: ExampleError,
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -973,7 +744,7 @@ Deno.test("assertSpyCallAync error", async () => {
       assertSpyCallAsync(spyFunc, 0, {
         error: {
           Class: Error,
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -983,7 +754,7 @@ Deno.test("assertSpyCallAync error", async () => {
     () =>
       assertSpyCallAsync(spyFunc, 0, {
         error: {
-          msg: "x",
+          msgIncludes: "x",
         },
       }),
     AssertionError,
@@ -992,7 +763,7 @@ Deno.test("assertSpyCallAync error", async () => {
   await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
-        returned: 7,
+        returned: Promise.resolve(7),
       }),
     AssertionError,
     "spy call returned promise was rejected",
@@ -1000,8 +771,8 @@ Deno.test("assertSpyCallAync error", async () => {
   await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
-        returned: 7,
-        error: { msg: "x" },
+        returned: Promise.resolve(7),
+        error: { msgIncludes: "x" },
       }),
     TypeError,
     "do not expect error and return, only one should be expected",
@@ -1014,7 +785,7 @@ Deno.test("assertSpyCallAync error", async () => {
 });
 
 Deno.test("assertSpyArg", () => {
-  const spyFunc: Spy<void> = spy();
+  const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, undefined),
@@ -1053,7 +824,7 @@ Deno.test("assertSpyArg", () => {
 });
 
 Deno.test("assertSpyArgs without range", () => {
-  const spyFunc: Spy<void> = spy();
+  const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, []),
@@ -1089,7 +860,7 @@ Deno.test("assertSpyArgs without range", () => {
 });
 
 Deno.test("assertSpyArgs with start only", () => {
-  const spyFunc: Spy<void> = spy();
+  const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, []),
@@ -1125,7 +896,7 @@ Deno.test("assertSpyArgs with start only", () => {
 });
 
 Deno.test("assertSpyArgs with range", () => {
-  const spyFunc: Spy<void> = spy();
+  const spyFunc = spy();
 
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, []),

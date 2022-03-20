@@ -1,15 +1,10 @@
 import { assertSpyCall, assertSpyCalls } from "./asserts.ts";
-import {
-  assertEquals,
-  assertNotEquals,
-  assertStrictEquals,
-  assertThrows,
-} from "./deps.ts";
-import { Spy, spy, SpyError } from "./spy.ts";
+import { assertEquals, assertNotEquals, assertThrows } from "./deps.ts";
+import { MockError, spy, stub } from "./mock.ts";
 import { Point, stringifyPoint } from "./test_shared.ts";
 
 Deno.test("spy default", () => {
-  const func: Spy<void> = spy();
+  const func = spy();
   assertSpyCalls(func, 0);
 
   assertEquals(func(), undefined);
@@ -53,21 +48,23 @@ Deno.test("spy default", () => {
   });
   assertSpyCalls(func, 5);
 
+  assertEquals(func.restored, false);
   assertThrows(
     () => func.restore(),
-    SpyError,
-    "no instance property to restore",
+    MockError,
+    "function cannot be restore",
   );
+  assertEquals(func.restored, false);
 });
 
 Deno.test("spy function", () => {
-  const func: Spy<void> = spy((value) => value);
+  const func = spy((value) => value);
   assertSpyCalls(func, 0);
 
-  assertEquals(func(), undefined);
+  assertEquals(func(undefined), undefined);
   assertSpyCall(func, 0, {
     self: undefined,
-    args: [],
+    args: [undefined],
     returned: undefined,
   });
   assertSpyCalls(func, 1);
@@ -88,54 +85,32 @@ Deno.test("spy function", () => {
   });
   assertSpyCalls(func, 3);
 
-  assertEquals(func(3, 5, 7), 3);
+  const point = new Point(2, 3);
+  assertEquals(func(point), point);
   assertSpyCall(func, 3, {
     self: undefined,
-    args: [3, 5, 7],
-    returned: 3,
+    args: [point],
+    returned: point,
   });
   assertSpyCalls(func, 4);
 
-  // Assert functions with variable types
-  const spiedFn = spy((a: number, b: boolean) => b ? a - 1 : a);
-  assertEquals(spiedFn(1, true), 0);
-  assertSpyCall(spiedFn, 0, {
-    returned: 0,
-    args: [1, true],
-  });
-
-  assertEquals(spiedFn(1, false), 1);
-  assertSpyCall(spiedFn, 1, {
-    returned: 1,
-    args: [1, false],
-  });
-
-  assertSpyCalls(spiedFn, 2);
-
-  const point: Point = new Point(2, 3);
-  assertEquals(func(Point, stringifyPoint, point), Point);
-  assertSpyCall(func, 4, {
-    self: undefined,
-    args: [Point, stringifyPoint, point],
-    returned: Point,
-  });
-  assertSpyCalls(func, 5);
-
+  assertEquals(func.restored, false);
   assertThrows(
     () => func.restore(),
-    SpyError,
-    "no instance property to restore",
+    MockError,
+    "function cannot be restored",
   );
+  assertEquals(func.restored, false);
 });
 
-Deno.test("spy instance property", () => {
+Deno.test("spy instance method", () => {
   const point = new Point(2, 3);
-  const func: Spy<Point> = spy(point, "action");
+  const func = spy(point, "action");
   assertSpyCalls(func, 0);
 
-  assertEquals(func(), undefined);
+  assertEquals(func.call(point), undefined);
   assertSpyCall(func, 0, {
-    self: undefined,
+    self: point,
     args: [],
     returned: undefined,
   });
@@ -145,9 +120,9 @@ Deno.test("spy instance property", () => {
   assertSpyCall(func, 1, { self: point, args: [] });
   assertSpyCalls(func, 2);
 
-  assertEquals(func("x"), "x");
+  assertEquals(func.call(point, "x"), "x");
   assertSpyCall(func, 2, {
-    self: undefined,
+    self: point,
     args: ["x"],
     returned: "x",
   });
@@ -161,9 +136,9 @@ Deno.test("spy instance property", () => {
   });
   assertSpyCalls(func, 4);
 
-  assertEquals(func({ x: 3 }), { x: 3 });
+  assertEquals(func.call(point, { x: 3 }), { x: 3 });
   assertSpyCall(func, 4, {
-    self: undefined,
+    self: point,
     args: [{ x: 3 }],
     returned: { x: 3 },
   });
@@ -177,9 +152,9 @@ Deno.test("spy instance property", () => {
   });
   assertSpyCalls(func, 6);
 
-  assertEquals(func(3, 5, 7), 3);
+  assertEquals(func.call(point, 3, 5, 7), 3);
   assertSpyCall(func, 6, {
-    self: undefined,
+    self: point,
     args: [3, 5, 7],
     returned: 3,
   });
@@ -193,9 +168,9 @@ Deno.test("spy instance property", () => {
   });
   assertSpyCalls(func, 8);
 
-  assertEquals(func(Point, stringifyPoint, point), Point);
+  assertEquals(func.call(point, Point, stringifyPoint, point), Point);
   assertSpyCall(func, 8, {
-    self: undefined,
+    self: point,
     args: [Point, stringifyPoint, point],
     returned: Point,
   });
@@ -212,23 +187,21 @@ Deno.test("spy instance property", () => {
   assertNotEquals(func, Point.prototype.action);
   assertEquals(point.action, func);
 
+  assertEquals(func.restored, false);
   func.restore();
+  assertEquals(func.restored, true);
   assertEquals(point.action, Point.prototype.action);
   assertThrows(
     () => func.restore(),
-    SpyError,
-    "instance property already restored",
+    MockError,
+    "instance method already restored",
   );
-  assertThrows(
-    () => func(),
-    SpyError,
-    "instance property already restored",
-  );
+  assertEquals(func.restored, true);
 });
 
 Deno.test("spy instance method symbol", () => {
   const point = new Point(2, 3);
-  const func: Spy<Point> = spy(point, Symbol.iterator);
+  const func = spy(point, Symbol.iterator);
   assertSpyCalls(func, 0);
 
   const values: number[] = [];
@@ -252,13 +225,16 @@ Deno.test("spy instance method symbol", () => {
   assertNotEquals(func, Point.prototype[Symbol.iterator]);
   assertEquals(point[Symbol.iterator], func);
 
+  assertEquals(func.restored, false);
   func.restore();
+  assertEquals(func.restored, true);
   assertEquals(point[Symbol.iterator], Point.prototype[Symbol.iterator]);
   assertThrows(
     () => func.restore(),
-    SpyError,
-    "instance property already restored",
+    MockError,
+    "instance method already restored",
   );
+  assertEquals(func.restored, true);
 });
 
 Deno.test("spy instance method property descriptor", () => {
@@ -267,18 +243,17 @@ Deno.test("spy instance method property descriptor", () => {
     configurable: true,
     enumerable: false,
     writable: false,
-    // deno-lint-ignore no-explicit-any
-    value: function (...args: any[]) {
+    value: function (...args: unknown[]) {
       return args[1];
     },
   };
   Object.defineProperty(point, "action", actionDescriptor);
-  const action: Spy<Point> = spy(point, "action");
+  const action = spy(point, "action");
   assertSpyCalls(action, 0);
 
-  assertEquals(action(), undefined);
+  assertEquals(action.call(point), undefined);
   assertSpyCall(action, 0, {
-    self: undefined,
+    self: point,
     args: [],
     returned: undefined,
   });
@@ -292,9 +267,9 @@ Deno.test("spy instance method property descriptor", () => {
   });
   assertSpyCalls(action, 2);
 
-  assertEquals(action("x", "y"), "y");
+  assertEquals(action.call(point, "x", "y"), "y");
   assertSpyCall(action, 2, {
-    self: undefined,
+    self: point,
     args: ["x", "y"],
     returned: "y",
   });
@@ -311,7 +286,9 @@ Deno.test("spy instance method property descriptor", () => {
   assertNotEquals(action, actionDescriptor.value);
   assertEquals(point.action, action);
 
+  assertEquals(action.restored, false);
   action.restore();
+  assertEquals(action.restored, true);
   assertEquals(point.action, actionDescriptor.value);
   assertEquals(
     Object.getOwnPropertyDescriptor(point, "action"),
@@ -319,112 +296,83 @@ Deno.test("spy instance method property descriptor", () => {
   );
   assertThrows(
     () => action.restore(),
-    SpyError,
-    "instance property already restored",
+    MockError,
+    "instance method already restored",
   );
+  assertEquals(action.restored, true);
 });
 
-Deno.test("spy instance method property getter/setter", () => {
+Deno.test("stub default", () => {
   const point = new Point(2, 3);
-  const action: Spy<Point> = spy(point, "action");
-  const getter: Spy<Point> = action.get!;
-  const setter: Spy<Point> = action.set!;
+  const func = stub(point, "action");
 
-  assertSpyCalls(action, 0);
-  assertSpyCalls(getter, 0);
-  assertSpyCalls(setter, 0);
+  assertSpyCalls(func, 0);
 
-  assertStrictEquals(point.action, action);
-  assertSpyCall(getter, 0, {
+  assertEquals(func.call(point), undefined);
+  assertSpyCall(func, 0, {
     self: point,
     args: [],
-    returned: action,
+    returned: undefined,
   });
-  assertSpyCalls(action, 0);
-  assertSpyCalls(getter, 1);
-  assertSpyCalls(setter, 0);
+  assertSpyCalls(func, 1);
 
-  assertEquals(point.action(1, 2), 1);
-  assertSpyCall(action, 0, { self: point, args: [1, 2], returned: 1 });
-  assertSpyCall(getter, 1, { self: point, args: [], returned: action });
-  assertSpyCalls(action, 1);
-  assertSpyCalls(getter, 2);
-  assertSpyCalls(setter, 0);
+  assertEquals(point.action(), undefined);
+  assertSpyCall(func, 1, {
+    self: point,
+    args: [],
+    returned: undefined,
+  });
+  assertSpyCalls(func, 2);
 
-  const replacement = () => 3;
-  assertStrictEquals(point.action = replacement, replacement);
-  assertSpyCall(setter, 0, { self: point, args: [replacement] });
-  assertSpyCalls(action, 1);
-  assertSpyCalls(getter, 2);
-  assertSpyCalls(setter, 1);
+  assertEquals(func.original, Point.prototype.action);
+  assertEquals(point.action, func);
 
-  assertStrictEquals(point.action, replacement);
-  assertSpyCall(getter, 2, { self: point, args: [], returned: replacement });
-  assertSpyCalls(action, 1);
-  assertSpyCalls(getter, 3);
-  assertSpyCalls(setter, 1);
-
-  assertEquals(point.action(1, 2), 3);
-  assertSpyCall(getter, 3, { self: point, args: [], returned: replacement });
-  assertSpyCalls(action, 1);
-  assertSpyCalls(getter, 4);
-  assertSpyCalls(setter, 1);
-
-  action.restore();
-  assertStrictEquals(point.action, Point.prototype.action);
-  assertSpyCalls(getter, 4);
+  assertEquals(func.restored, false);
+  func.restore();
+  assertEquals(func.restored, true);
+  assertEquals(point.action, Point.prototype.action);
   assertThrows(
-    () => action.restore(),
-    SpyError,
-    "instance property already restored",
+    () => func.restore(),
+    MockError,
+    "instance method already restored",
   );
+  assertEquals(func.restored, true);
 });
 
-Deno.test("spy instance property getter/setter", () => {
+Deno.test("stub function", () => {
   const point = new Point(2, 3);
-  const x: Spy<Point> = spy(point, "x");
-  const getter: Spy<Point> = x.get as Spy<Point>;
-  const setter: Spy<Point> = x.set as Spy<Point>;
+  const returns = [1, "b", 2, "d"];
+  const func = stub(point, "action", () => returns.shift());
 
-  assertSpyCalls(x, 0);
-  assertSpyCalls(getter, 0);
-  assertSpyCalls(setter, 0);
+  assertSpyCalls(func, 0);
 
-  assertStrictEquals(point.x, 2);
-  assertSpyCall(getter, 0, { self: point, args: [], returned: 2 });
-  assertSpyCalls(x, 0);
-  assertSpyCalls(getter, 1);
-  assertSpyCalls(setter, 0);
-
-  assertThrows(() => x(1, 2), SpyError, "not a function");
-  assertSpyCall(getter, 1, { self: undefined, args: [], returned: 2 });
-  assertSpyCall(x, 0, {
-    self: undefined,
-    args: [1, 2],
-    error: { Class: SpyError, msg: "not a function" },
+  assertEquals(func.call(point), 1);
+  assertSpyCall(func, 0, {
+    self: point,
+    args: [],
+    returned: 1,
   });
-  assertSpyCalls(x, 1);
-  assertSpyCalls(getter, 2);
-  assertSpyCalls(setter, 0);
+  assertSpyCalls(func, 1);
 
-  assertStrictEquals(point.x = 4, 4);
-  assertSpyCall(setter, 0, { self: point, args: [4], returned: undefined });
-  assertSpyCalls(x, 1);
-  assertSpyCalls(getter, 2);
-  assertSpyCalls(setter, 1);
+  assertEquals(point.action(), "b");
+  assertSpyCall(func, 1, {
+    self: point,
+    args: [],
+    returned: "b",
+  });
+  assertSpyCalls(func, 2);
 
-  assertStrictEquals(point.x, 4);
-  assertSpyCall(getter, 2, { self: point, args: [], returned: 4 });
-  assertSpyCalls(x, 1);
-  assertSpyCalls(getter, 3);
-  assertSpyCalls(setter, 1);
+  assertEquals(func.original, Point.prototype.action);
+  assertEquals(point.action, func);
 
-  x.restore();
-  assertStrictEquals(point.x, 2);
-  assertSpyCalls(getter, 3);
+  assertEquals(func.restored, false);
+  func.restore();
+  assertEquals(func.restored, true);
+  assertEquals(point.action, Point.prototype.action);
   assertThrows(
-    () => x.restore(),
-    SpyError,
-    "instance property already restored",
+    () => func.restore(),
+    MockError,
+    "instance method already restored",
   );
+  assertEquals(func.restored, true);
 });
