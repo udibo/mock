@@ -5,7 +5,7 @@ function secondInterval(cb: () => void): void {
 }
 
 Deno.test("secondInterval calls callback every second", () => {
-  const time: FakeTime = new FakeTime();
+  const time = new FakeTime();
   const cb = spy();
 
   try {

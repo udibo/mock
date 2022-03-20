@@ -189,7 +189,7 @@ export class FakeTime {
     start?: number | string | NativeDate | null,
     options?: FakeTimeOptions,
   ) {
-    FakeTime.restore();
+    if (time) time.restore();
     this.initializedAt = NativeDate.now();
     this._start = start instanceof NativeDate
       ? start.valueOf()
@@ -226,10 +226,8 @@ export class FakeTime {
   }
 
   static restore(): void {
-    if (time) {
-      time.restore();
-      console.error("already using fake time");
-    }
+    if (!time) throw new TimeError("time already restored");
+    time.restore();
   }
 
   static setTimeout(

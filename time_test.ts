@@ -26,7 +26,6 @@ Deno.test("FakeDate parse and UTC behave the same", () => {
 });
 
 Deno.test("Date unchanged if FakeTime is uninitialized", () => {
-  FakeTime.restore();
   assertNotEquals(Date, FakeDate);
   assertStrictEquals(Date, NativeDate);
 });
@@ -44,7 +43,6 @@ Deno.test("Date is FakeDate if FakeTime is initialized", () => {
 });
 
 Deno.test("FakeDate.now uses Date.now if FakeTime is uninitialized", () => {
-  FakeTime.restore();
   const now = spy(NativeDate, "now");
   try {
     const result = FakeDate.now();
@@ -112,7 +110,6 @@ Deno.test("FakeDate instance methods passthrough to Date instance methods", () =
 });
 
 Deno.test("timeout functions unchanged if FakeTime is uninitialized", () => {
-  FakeTime.restore();
   assertNotEquals(setTimeout, FakeTime.setTimeout);
   assertNotEquals(clearTimeout, FakeTime.clearTimeout);
 });
@@ -195,7 +192,6 @@ Deno.test("FakeTime controls timeouts", () => {
 });
 
 Deno.test("interval functions unchanged if FakeTime is uninitialized", () => {
-  FakeTime.restore();
   assertNotEquals(setInterval, FakeTime.setInterval);
   assertNotEquals(clearInterval, FakeTime.clearInterval);
 });
