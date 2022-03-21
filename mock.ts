@@ -367,8 +367,7 @@ export function stub<
     throw new MockError("cannot spy on non configurable instance method");
   }
 
-  const fake = func ??
-    (function () {}) as (this: Self, ...args: Args) => Return;
+  const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
 
   const original = self[property] as unknown as (
       this: Self,
