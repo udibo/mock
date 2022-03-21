@@ -5,7 +5,6 @@ import {
   AssertionError,
   assertIsError,
   assertRejects,
-  assertStrictEquals,
 } from "./deps.ts";
 import { Spy, SpyCall } from "./mock.ts";
 
@@ -33,9 +32,12 @@ export function assertSpyCalls<
 
 /** Call information recorded by a spy. */
 export interface ExpectedSpyCall<
-  Self = unknown,
-  Args extends unknown[] = unknown[],
-  Return = unknown,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
 > {
   /** Arguments passed to a function when called. */
   args?: [...Args, ...unknown[]];
@@ -86,7 +88,7 @@ export function assertSpyCall<
 
     if ("self" in expected) {
       try {
-        assertStrictEquals(call.self, expected.self);
+        assertEquals(call.self, expected.self);
       } catch (e) {
         let message = expected.self
           ? "spy not called as method on expected self:\n"
