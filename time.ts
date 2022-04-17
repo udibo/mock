@@ -172,6 +172,8 @@ let time: FakeTime | undefined = undefined;
 /**
  * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
+ *
+ * @deprecated Use https://deno.land/std/testing/time.ts instead.
  */
 export class FakeTime {
   private _now: number;
