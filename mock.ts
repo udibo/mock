@@ -281,7 +281,11 @@ function methodSpy<
   return spy;
 }
 
-/** Wraps a function or instance method with a Spy. */
+/**
+ * Wraps a function or instance method with a Spy.
+ *
+ * @deprecated Use https://deno.land/std/testing/mock.ts instead.
+ */
 export function spy<
   // deno-lint-ignore no-explicit-any
   Self = any,
@@ -330,7 +334,11 @@ export interface Stub<
   fake: (this: Self, ...args: Args) => Return;
 }
 
-/** Replaces an instance method with a Stub. */
+/**
+ * Replaces an instance method with a Stub.
+ *
+ * @deprecated Use https://deno.land/std/testing/mock.ts instead.
+ */
 export function stub<
   Self,
   // deno-lint-ignore no-explicit-any
