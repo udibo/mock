@@ -1,13 +1,16 @@
 # Mock
 
-[![release](https://img.shields.io/badge/release-0.15.1-success)](https://github.com/udibo/mock/releases/tag/0.15.1)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.15.1/mod.ts)
+[![release](https://img.shields.io/badge/release-0.15.2-success)](https://github.com/udibo/mock/releases/tag/0.15.2)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/mock@0.15.2/mod.ts)
 [![CI](https://github.com/udibo/mock/workflows/CI/badge.svg)](https://github.com/udibo/mock/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/udibo/mock/branch/main/graph/badge.svg?token=TXORMSEHM7)](https://codecov.io/gh/udibo/mock)
 [![license](https://img.shields.io/github/license/udibo/mock)](https://github.com/udibo/mock/blob/master/LICENSE)
 
 Utilities to help mock behavior, spy on function calls, stub methods and fake
 time for tests.
+
+This module is being archived. It has been added to Deno's standard library in
+the testing directory. Use Deno's standard library instead.
 
 ## Features
 
@@ -30,9 +33,9 @@ imported directly from GitHub using raw content URLs.
 
 ```ts
 // Import from Deno's third party module registry
-import { spy, stub } from "https://deno.land/x/mock@0.15.1/mod.ts";
+import { spy, stub } from "https://deno.land/x/mock@0.15.2/mod.ts";
 // Import from GitHub
-import { spy, stub } "https://raw.githubusercontent.com/udibo/mock/0.15.1/mod.ts";
+import { spy, stub } "https://raw.githubusercontent.com/udibo/mock/0.15.2/mod.ts";
 ```
 
 If you do not need all of the sub-modules, you can choose to just import the
@@ -40,12 +43,12 @@ sub-modules you need.
 
 ```ts
 // Import from Deno's third party module registry
-import { spy, stub } from "https://deno.land/x/mock@0.15.1/mock.ts";
+import { spy, stub } from "https://deno.land/x/mock@0.15.2/mock.ts";
 // Import from GitHub
 import {
   spy,
   stub,
-} from "https://raw.githubusercontent.com/udibo/mock/0.15.1/mock.ts";
+} from "https://raw.githubusercontent.com/udibo/mock/0.15.2/mock.ts";
 ```
 
 #### Sub-modules
@@ -69,7 +72,7 @@ If a Node.js package has the type "module" specified in its package.json file,
 the JavaScript bundle can be imported as a `.js` file.
 
 ```js
-import { spy, stub } from "./mock_0.15.1.js";
+import { spy, stub } from "./mock_0.15.2.js";
 ```
 
 The default type for Node.js packages is "commonjs". To import the bundle into a
@@ -77,7 +80,7 @@ commonjs package, the file extension of the JavaScript bundle must be changed
 from `.js` to `.mjs`.
 
 ```js
-import { spy, stub } from "./mock_0.15.1.mjs";
+import { spy, stub } from "./mock_0.15.2.mjs";
 ```
 
 See [Node.js Documentation](https://nodejs.org/api/esm.html) for more
@@ -96,7 +99,7 @@ modules must have the type attribute set to "module".
 
 ```js
 // main.js
-import { spy, stub } from "./mock_0.15.1.js";
+import { spy, stub } from "./mock_0.15.2.js";
 ```
 
 You can also embed a module script directly into an HTML file by placing the
@@ -104,7 +107,7 @@ JavaScript code within the body of the script tag.
 
 ```html
 <script type="module">
-  import { spy, stub } from "./mock_0.15.1.js";
+  import { spy, stub } from "./mock_0.15.2.js";
 </script>
 ```
 
@@ -120,7 +123,7 @@ a try block then restore the function in a finally block to ensure the original
 instance method is restored before continuing to other tests. The same applies
 when using fake time.
 
-See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.15.1/mod.ts) for
+See [deno docs](https://doc.deno.land/https/deno.land/x/mock@0.15.2/mod.ts) for
 more information.
 
 ### Spy
@@ -136,7 +139,7 @@ for any calls made to it.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.135.0/testing/asserts.ts";
-import { assertSpyCall, spy } from "https://deno.land/x/mock@0.15.1/mod.ts";
+import { assertSpyCall, spy } from "https://deno.land/x/mock@0.15.2/mod.ts";
 
 function add(
   a: number,
@@ -167,7 +170,7 @@ import {
   assertSpyCall,
   assertSpyCalls,
   spy,
-} from "https://deno.land/x/mock@0.15.1/mod.ts";
+} from "https://deno.land/x/mock@0.15.2/mod.ts";
 
 function filter<T>(values: T[], callback: (value: T) => boolean): any[] {
   return values.filter(callback);
@@ -202,7 +205,7 @@ import {
   assertSpyCall,
   assertSpyCalls,
   spy,
-} from "https://deno.land/x/mock@0.15.1/mod.ts";
+} from "https://deno.land/x/mock@0.15.2/mod.ts";
 
 class Database {
   // deno-lint-ignore no-explicit-any
@@ -293,7 +296,7 @@ import {
   assertSpyCall,
   assertSpyCalls,
   stub,
-} from "https://deno.land/x/mock@0.15.1/mod.ts";
+} from "https://deno.land/x/mock@0.15.2/mod.ts";
 
 class Cat {
   action(name: string): any {
@@ -345,7 +348,7 @@ import {
   assertSpyCalls,
   resolvesNext,
   stub,
-} from "https://deno.land/x/mock@0.15.1/mod.ts";
+} from "https://deno.land/x/mock@0.15.2/mod.ts";
 
 class Database {
   query(_query: string, _params: unknown[]): Promise<unknown[][]> {
@@ -427,7 +430,7 @@ import {
   FakeTime,
   Spy,
   spy,
-} from "https://deno.land/x/mock@0.15.1/mod.ts";
+} from "https://deno.land/x/mock@0.15.2/mod.ts";
 
 function secondInterval(cb: () => void): void {
   setInterval(cb, 1000);
